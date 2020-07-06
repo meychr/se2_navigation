@@ -19,6 +19,7 @@ set(SRC_FILES
   src/ProgressValidator.cpp
   src/SimplePathTracker.cpp
   src/Stopwatch.cpp
+  src/YawRateController.cpp
 )
 
 set(CATKIN_PACKAGE_DEPENDENCIES )

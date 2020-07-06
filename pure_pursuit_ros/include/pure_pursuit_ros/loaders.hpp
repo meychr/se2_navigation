@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include "pure_pursuit_core/heading_control/AckermannSteeringController.hpp"
+#include "pure_pursuit_core/heading_control/YawRateController.hpp"
 #include "pure_pursuit_core/path_tracking/PathPreprocessor.hpp"
 #include "pure_pursuit_core/path_tracking/ProgressValidator.hpp"
 #include "pure_pursuit_core/path_tracking/SimplePathTracker.hpp"
@@ -17,6 +18,8 @@
 namespace pure_pursuit {
 
 AckermannSteeringCtrlParameters loadAckermannSteeringControllerParameters(const std::string& filename);
+
+YawRateCtrlParameters loadYawRateControllerParameters(const std::string& filename);
 
 ConstantVelocityControllerParameters loadConstantVelocityControllerParameters(const std::string& filename);
 
