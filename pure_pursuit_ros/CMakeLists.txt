@@ -9,6 +9,7 @@ set(SRC_FILES
   src/loaders.cpp
   src/SimplePathTrackerRos.cpp
   src/AckermannSteeringControllerRos.cpp
+  src/YawRateControllerRos.cpp
 )
 
 set(CATKIN_PACKAGE_DEPENDENCIES

@@ -1,5 +1,5 @@
 /*
- * AckermannSteeringControllerLoader.cpp
+ * loaders.cpp
  *
  *  Created on: Mar 26, 2020
  *      Author: jelavice
@@ -32,6 +32,32 @@ AckermannSteeringCtrlParameters loadAckermannSteeringControllerParameters(const 
   parameters.avgFilgerCurrentSampleWeight_ = node["avg_filter_current_sample_weight"].as<double>();
 
   // ackermann specific
+  auto ackermannNode = node["heading_control_ackermann"];
+  parameters.wheelBase_ = ackermannNode["wheel_base"].as<double>();
+  parameters.maxSteeringAngleMagnitude_ = degToRad * ackermannNode["max_steering_angle_magnitude_in_deg"].as<double>();
+  parameters.maxSteeringRateOfChange_ = degToRad * ackermannNode["max_steering_rate_of_change_in_deg_per_sec"].as<double>();
+
+  return parameters;
+}
+
+YawRateCtrlParameters loadYawRateControllerParameters(const std::string& filename) {
+  YAML::Node basenode = YAML::LoadFile(filename);
+
+  if (basenode.IsNull()) {
+    throw std::runtime_error("YawRateControllerLoader::loadParameters loading failed");
+  }
+
+  auto node = basenode["heading_control"];
+
+  YawRateCtrlParameters parameters;
+  parameters.anchorDistanceBck_ = node["anchor_dist_bck"].as<double>();
+  parameters.anchorDistanceFwd_ = node["anchor_dist_fwd"].as<double>();
+  parameters.lookaheadDistanceBck_ = node["lookahead_bck"].as<double>();
+  parameters.lookaheadDistanceFwd_ = node["lookahead_fwd"].as<double>();
+  parameters.deadZoneWidth_ = node["dead_zone_width"].as<double>();
+  parameters.avgFilgerCurrentSampleWeight_ = node["avg_filter_current_sample_weight"].as<double>();
+
+  // TODO remove ackermann specific, check with RRT* planner
   auto ackermannNode = node["heading_control_ackermann"];
   parameters.wheelBase_ = ackermannNode["wheel_base"].as<double>();
   parameters.maxSteeringAngleMagnitude_ = degToRad * ackermannNode["max_steering_angle_magnitude_in_deg"].as<double>();
