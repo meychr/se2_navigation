@@ -51,6 +51,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 
+#include "spacebok_msgs/SpacebokControllerState.h"
+#include "spacebok_msgs/SpacebokHighlevelState.h"
+
 namespace se2_navigation_msgs {
   struct ControllerCommand;
 }
@@ -102,8 +105,13 @@ class PlanningPanel : public rviz::Panel {
   void callPlanningService();
   void callPublishTrackingCommand();
   void callPublishStopTrackingCommand();
+  void callPublishSpacebokStandUpCommand();
+  void callPublishSpacebokStartCommand();
+  void callPublishSpacebokStopCommand();
+  void publishSpacebokHighlevelState(spacebok_msgs::SpacebokHighlevelState &state) const;
+  void publishSpacebokControllerState(spacebok_msgs::SpacebokControllerState &state) const;
 
- protected:
+protected:
   // Set up the layout, only called by the constructor.
   void createLayout();
   void setControllerCommandTopic(const QString& newControllerCommandTopic);
@@ -116,6 +124,8 @@ class PlanningPanel : public rviz::Panel {
 
   // ROS Stuff:
   ros::NodeHandle nh_;
+  ros::Publisher spacebokHighlevelStatePublisher_;
+  ros::Publisher spacebokControllerStatePublisher_;
 
   // QT stuff:
   QLineEdit* controllerCommandTopicEditor_;
@@ -126,6 +136,9 @@ class PlanningPanel : public rviz::Panel {
   QPushButton* plan_request_button_;
   QPushButton* tracking_command_button_;
   QPushButton* stop_command_button_;
+  QPushButton* spacebok_standup_button_;
+  QPushButton* spacebok_start_button_;
+  QPushButton* spacebok_stop_button_;
   QCheckBox *currentStateAsStartCheckBox_;
 
 
