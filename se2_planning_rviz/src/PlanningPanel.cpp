@@ -60,6 +60,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 #include "se2_navigation_msgs/ControllerCommand.hpp"
 #include "se2_navigation_msgs/SendControllerCommandSrv.h"
 
+#include "spacebok_msgs/SpacebokControllerState.h"
+#include "spacebok_msgs/SpacebokHighlevelState.h"
+
 #include <thread>
 
 namespace se2_planning_rviz {
@@ -105,6 +108,11 @@ void PlanningPanel::onInitialize()
     kv.second->getPose(&state);
     interactive_markers_.enableMarker(kv.first, state);
   }
+
+  spacebokHighlevelStatePublisher_ = nh_.advertise<spacebok_msgs::SpacebokHighlevelState>(
+    "/highlevel_state_command", 1);
+  spacebokControllerStatePublisher_ = nh_.advertise<spacebok_msgs::SpacebokControllerState>(
+    "/controller_state_command", 1);
 }
 
 void PlanningPanel::createLayout()
@@ -161,11 +169,21 @@ void PlanningPanel::createLayout()
   service_layout->addWidget(tracking_command_button_);
   service_layout->addWidget(stop_command_button_);
 
+  // Spacebok services.
+  QHBoxLayout* service_spacebok_layout = new QHBoxLayout;
+  spacebok_standup_button_ = new QPushButton("Standup");
+  spacebok_start_button_ = new QPushButton("Walk");
+  spacebok_stop_button_ = new QPushButton("Stop");
+  service_spacebok_layout->addWidget(spacebok_standup_button_);
+  service_spacebok_layout->addWidget(spacebok_start_button_);
+  service_spacebok_layout->addWidget(spacebok_stop_button_);
+
   // First the names, then the start/goal, then service buttons.
   QVBoxLayout* layout = new QVBoxLayout;
   layout->addWidget(formGroupBox);
   layout->addLayout(start_goal_layout);
   layout->addLayout(service_layout);
+  layout->addLayout(service_spacebok_layout);
   setLayout(layout);
 
   //set the default parameters
@@ -181,6 +199,9 @@ void PlanningPanel::createLayout()
   connect(plan_request_button_, SIGNAL(released()), this, SLOT(callPlanningService()));
   connect(tracking_command_button_, SIGNAL(released()), this, SLOT(callPublishTrackingCommand()));
   connect(stop_command_button_, SIGNAL(released()), this, SLOT(callPublishStopTrackingCommand()));
+  connect(spacebok_standup_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStandUpCommand()));
+  connect(spacebok_start_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStartCommand()));
+  connect(spacebok_stop_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStopCommand()));
 }
 
 void PlanningPanel::updateControllerCommandTopic()
@@ -401,16 +422,57 @@ callSendControllerCommandService(command);
 }
 
 void PlanningPanel::callSendControllerCommandService(
-se2_navigation_msgs::ControllerCommand &command) const
+  se2_navigation_msgs::ControllerCommand &command) const
 {
 
-se2_navigation_msgs::SendControllerCommandSrv::Request req;
-se2_navigation_msgs::SendControllerCommandSrv::Response res;
+  se2_navigation_msgs::SendControllerCommandSrv::Request req;
+  se2_navigation_msgs::SendControllerCommandSrv::Response res;
 
-req.command = se2_navigation_msgs::convert(command);
-std::string service_name = controllerCommandTopicName_.toStdString();
-callService(req, res, service_name);
+  req.command = se2_navigation_msgs::convert(command);
+  std::string service_name = controllerCommandTopicName_.toStdString();
+  callService(req, res, service_name);
 
+}
+
+void PlanningPanel::callPublishSpacebokStandUpCommand()
+{
+spacebok_msgs::SpacebokHighlevelState highlevelState;
+highlevelState.header.stamp = ros::Time::now();
+highlevelState.state = spacebok_msgs::SpacebokHighlevelState::OPERATIONAL;
+publishSpacebokHighlevelState(highlevelState);
+
+spacebok_msgs::SpacebokControllerState controllerState;
+controllerState.header.stamp = ros::Time::now();
+controllerState.state = spacebok_msgs::SpacebokControllerState::STAND_UP;
+publishSpacebokControllerState(controllerState);
+}
+
+void PlanningPanel::callPublishSpacebokStartCommand()
+{
+  spacebok_msgs::SpacebokControllerState controllerState;
+  controllerState.header.stamp = ros::Time::now();
+  controllerState.state = spacebok_msgs::SpacebokControllerState::WALKING_TROT;
+  publishSpacebokControllerState(controllerState);
+}
+
+void PlanningPanel::callPublishSpacebokStopCommand()
+{
+  spacebok_msgs::SpacebokControllerState controllerState;
+  controllerState.header.stamp = ros::Time::now();
+  controllerState.state = spacebok_msgs::SpacebokControllerState::STANDBY;
+  publishSpacebokControllerState(controllerState);
+}
+
+void PlanningPanel::publishSpacebokHighlevelState(
+  spacebok_msgs::SpacebokHighlevelState &state) const
+{
+  spacebokHighlevelStatePublisher_.publish(state);
+}
+
+void PlanningPanel::publishSpacebokControllerState(
+  spacebok_msgs::SpacebokControllerState &state) const
+{
+  spacebokControllerStatePublisher_.publish(state);
 }
 
 } /* namespace se2_planning_rviz */
