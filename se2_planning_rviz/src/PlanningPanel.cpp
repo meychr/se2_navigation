@@ -122,9 +122,11 @@ void PlanningPanel::createLayout()
   planningServiceNameEditor_ = new QLineEdit;
   controllerCommandTopicEditor_ = new QLineEdit;
   currStateServiceEditor_ = new QLineEdit;
+  pathFileEditor_ = new QLineEdit;
   topic_layout->addRow(new QLabel(tr("Ctrl command topic:")), controllerCommandTopicEditor_);
   topic_layout->addRow(new QLabel(tr("Planning service:")), planningServiceNameEditor_);
   topic_layout->addRow(new QLabel(tr("Curr State Service:")), currStateServiceEditor_);
+  topic_layout->addRow(new QLabel(tr("Path to .txt file of path:")), pathFileEditor_);
   formGroupBox->setLayout(topic_layout);
 
   // Start and goal poses.
@@ -196,6 +198,8 @@ void PlanningPanel::createLayout()
           SLOT(updatePathRequestTopic()));
   connect(currStateServiceEditor_, SIGNAL(editingFinished()), this,
           SLOT(updateGetCurrentStateService()));
+  connect(pathFileEditor_, SIGNAL(editingFinished()), this,
+          SLOT(updatePathFilePath()));
   connect(plan_request_button_, SIGNAL(released()), this, SLOT(callPlanningService()));
   connect(tracking_command_button_, SIGNAL(released()), this, SLOT(callPublishTrackingCommand()));
   connect(stop_command_button_, SIGNAL(released()), this, SLOT(callPublishStopTrackingCommand()));
@@ -241,6 +245,19 @@ void PlanningPanel::setPathRequestTopic(const QString& newPathRequestTopicName)
 {
   if (newPathRequestTopicName != planningServiceName_) {
     planningServiceName_ = newPathRequestTopicName;
+    Q_EMIT configChanged();
+  }
+}
+//////////////////
+void PlanningPanel::updatePathFilePath()
+{
+  setPathFilePath(pathFileEditor_->text());
+}
+
+void PlanningPanel::setPathFilePath(const QString& newPathFilePath)
+{
+  if (newPathFilePath != currentPathFilePath_) {
+    currentPathFilePath_ = newPathFilePath;
     Q_EMIT configChanged();
   }
 }

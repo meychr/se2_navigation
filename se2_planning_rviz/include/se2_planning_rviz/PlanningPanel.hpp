@@ -97,6 +97,7 @@ class PlanningPanel : public rviz::Panel {
   void updateControllerCommandTopic();
   void updatePathRequestTopic();
   void updateGetCurrentStateService();
+  void updatePathFilePath();
   void startEditing(const std::string& id);
   void finishEditing(const std::string& id);
   void widgetPoseUpdated(const std::string& id,
@@ -110,6 +111,7 @@ class PlanningPanel : public rviz::Panel {
   void callPublishSpacebokStopCommand() const;
   void publishSpacebokHighlevelState(spacebok_msgs::SpacebokHighlevelState &state) const;
   void publishSpacebokControllerState(spacebok_msgs::SpacebokControllerState &state) const;
+  void callPathLoaderService();
 
 protected:
   // Set up the layout, only called by the constructor.
@@ -117,6 +119,7 @@ protected:
   void setControllerCommandTopic(const QString& newControllerCommandTopic);
   void setPathRequestTopic(const QString &newPathRequestTopic);
   void setGetCurrentStateService(const QString &newCurrentStateService);
+  void setPathFilePath(const QString& newPathFilePath);
 
   void getStartPoseFromWidget(geometry_msgs::Pose *startPoint);
   void getStartPoseFromService(geometry_msgs::Pose *startPoint);
@@ -131,6 +134,7 @@ protected:
   QLineEdit* controllerCommandTopicEditor_;
   QLineEdit* planningServiceNameEditor_;
   QLineEdit* currStateServiceEditor_;
+  QLineEdit* pathFileEditor_;
   PoseWidget* start_pose_widget_;
   PoseWidget* goal_pose_widget_;
   QPushButton* plan_request_button_;
@@ -152,6 +156,7 @@ protected:
   QString controllerCommandTopicName_;
   QString planningServiceName_;
   QString currentStateServiceName_;
+  QString currentPathFilePath_;
 
   // Other state:
   std::string currently_editing_;
