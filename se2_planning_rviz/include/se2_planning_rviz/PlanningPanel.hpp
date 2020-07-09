@@ -105,9 +105,9 @@ class PlanningPanel : public rviz::Panel {
   void callPlanningService();
   void callPublishTrackingCommand();
   void callPublishStopTrackingCommand();
-  void callPublishSpacebokStandUpCommand();
-  void callPublishSpacebokStartCommand();
-  void callPublishSpacebokStopCommand();
+  void callPublishSpacebokStandUpCommand() const;
+  void callPublishSpacebokStartCommand() const;
+  void callPublishSpacebokStopCommand() const;
   void publishSpacebokHighlevelState(spacebok_msgs::SpacebokHighlevelState &state) const;
   void publishSpacebokControllerState(spacebok_msgs::SpacebokControllerState &state) const;
 
