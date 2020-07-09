@@ -36,7 +36,7 @@ void SimplePathTracker::advanceStateMachine() {
       progressValidator_->isPathSegmentTrackingFinished(currentPath_.segment_.at(currentPathSegmentId_), currentRobotState_);
   const bool isPathTrackingFinished = progressValidator_->isPathTrackingFinished(currentPath_, currentRobotState_, currentPathSegmentId_);
 
-  if (isPathTrackingFinished) {
+  if (currentFSMState_ != States::NoOperation && isPathTrackingFinished) {
     currentFSMState_ = States::NoOperation;
     std::cout << "Going to nop state (tracking done)" << std::endl;
   }
