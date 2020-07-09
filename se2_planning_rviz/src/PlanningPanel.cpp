@@ -434,7 +434,7 @@ void PlanningPanel::callSendControllerCommandService(
 
 }
 
-void PlanningPanel::callPublishSpacebokStandUpCommand()
+void PlanningPanel::callPublishSpacebokStandUpCommand() const
 {
 spacebok_msgs::SpacebokHighlevelState highlevelState;
 highlevelState.header.stamp = ros::Time::now();
@@ -447,7 +447,7 @@ controllerState.state = spacebok_msgs::SpacebokControllerState::STAND_UP;
 publishSpacebokControllerState(controllerState);
 }
 
-void PlanningPanel::callPublishSpacebokStartCommand()
+void PlanningPanel::callPublishSpacebokStartCommand() const
 {
   spacebok_msgs::SpacebokControllerState controllerState;
   controllerState.header.stamp = ros::Time::now();
@@ -455,7 +455,7 @@ void PlanningPanel::callPublishSpacebokStartCommand()
   publishSpacebokControllerState(controllerState);
 }
 
-void PlanningPanel::callPublishSpacebokStopCommand()
+void PlanningPanel::callPublishSpacebokStopCommand() const
 {
   spacebok_msgs::SpacebokControllerState controllerState;
   controllerState.header.stamp = ros::Time::now();
