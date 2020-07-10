@@ -17,6 +17,7 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   nav_msgs
   tf2
   se2_navigation_msgs
+  grid_map_ros
 )
 
 find_package(catkin REQUIRED
