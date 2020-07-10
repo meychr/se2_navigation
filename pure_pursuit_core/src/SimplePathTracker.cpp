@@ -36,9 +36,15 @@ void SimplePathTracker::advanceStateMachine() {
       progressValidator_->isPathSegmentTrackingFinished(currentPath_.segment_.at(currentPathSegmentId_), currentRobotState_);
   const bool isPathTrackingFinished = progressValidator_->isPathTrackingFinished(currentPath_, currentRobotState_, currentPathSegmentId_);
 
+  printFSMState(currentFSMState_);
+
   if (currentFSMState_ != States::NoOperation && isPathTrackingFinished) {
     currentFSMState_ = States::NoOperation;
     std::cout << "Going to nop state (tracking done)" << std::endl;
+  }
+
+  if (isSegmentTrackingFinished) {
+    std::cout << "Segment changed" << std::endl;
   }
 
   if (currentFSMState_ == States::Driving && isSegmentTrackingFinished) {
@@ -116,6 +122,22 @@ bool SimplePathTracker::advanceControllers() {
 
 void SimplePathTracker::stopTracking() {
   currentFSMState_ = States::NoOperation;
+}
+
+void SimplePathTracker::printFSMState(States FSMState) {
+  switch (FSMState) {
+    case States::NoOperation:
+      std::cout << "States::NoOperation" << std::endl;
+      break;
+    case States::Driving:
+      std::cout << "States::Driving" << std::endl;
+      break;
+    case States::Waiting:
+      std::cout << "States::Waiting" << std::endl;
+      break;
+    default:
+      std::cout << "No valid state" << std::endl;
+  }
 }
 
 std::unique_ptr<PathTracker> createSimplePathTracker(const SimplePathTrackerParameters& parameters,

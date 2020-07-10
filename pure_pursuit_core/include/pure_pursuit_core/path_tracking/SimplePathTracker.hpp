@@ -30,6 +30,7 @@ class SimplePathTracker : public PathTracker {
   enum class States : int { NoOperation, Waiting, Driving };
   void advanceStateMachine() override;
   bool advanceControllers() override;
+  static void printFSMState(States FSMState);
 
   States currentFSMState_ = States::NoOperation;
   bool isPathReceived_ = false;
