@@ -43,7 +43,11 @@ bool OmplReedsSheppPlannerRos::planningService(PlanningService::Request& req, Pl
   const auto goal = se2_planning::convert(req.pathRequest.goalPose);
   setStartingState(start);
   setGoalState(goal);
+
+  // Block update of state validator obstacle map during planning
+  planner_->as<OmplReedsSheppPlanner>()->lockStateValidator();
   bool result = plan();
+  planner_->as<OmplReedsSheppPlanner>()->unlockStateValidator();
 
   res.status = result;
 

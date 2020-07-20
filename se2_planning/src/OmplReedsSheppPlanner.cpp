@@ -73,6 +73,18 @@ const StateValidator& OmplReedsSheppPlanner::getStateValidator() const {
   return *stateValidator_;
 }
 
+void OmplReedsSheppPlanner::lockStateValidator() {
+  stateValidator_->lock();
+}
+
+void OmplReedsSheppPlanner::unlockStateValidator() {
+  stateValidator_->unlock();
+}
+
+bool OmplReedsSheppPlanner::isLocked() const {
+  return stateValidator_->isLocked();
+}
+
 bool OmplReedsSheppPlanner::isStateValid(const ompl::base::SpaceInformation* si, const ompl::base::State* state) {
   const ReedsSheppState rsState = se2_planning::convert(state);
   return stateValidator_->isStateValid(rsState);
