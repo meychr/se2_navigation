@@ -57,6 +57,23 @@ OmplReedsSheppPlannerRosParameters loadOmplReedsSheppPlannerRosParameters(const 
   return parameters;
 }
 
+GridMapLazyStateValidatorRosParameters loadGridMapLazyStateValidatorRosParameters(const std::string& filename) {
+  YAML::Node basenode = YAML::LoadFile(filename);
+
+  if (basenode.IsNull()) {
+    throw std::runtime_error("GridMapLazyStateValidatorRosParameters::loadParameters loading failed");
+  }
+
+  GridMapLazyStateValidatorRosParameters parameters;
+  auto node = basenode["state_validator_ros"];
+  parameters.gridMapFrame_ = node["grid_map_frame"].as<std::string>();
+  parameters.gridMapObstacleLayerName_ = node["grid_map_obstacle_layer_name"].as<std::string>();
+  parameters.gridMapMsgTopic_ = node["grid_map_msg_topic"].as<std::string>();
+  parameters.gridMapResolution_ = node["grid_map_resolution"].as<double>();
+
+  return parameters;
+}
+
 void loadRRTstarParameters(const std::string& filename, RRTstarParameters* parameters) {
   YAML::Node basenode = YAML::LoadFile(filename);
 

@@ -23,7 +23,7 @@ class GridMapLazyStateValidator : public GridMapStateValidator {
   ~GridMapLazyStateValidator() override = default;
 
   bool isStateValid(const State& state) const final;
-  void initialize() final;
+  void initialize() override;
   bool isInitialized() const final;
 
   void setIsUseRandomizedStrategy(bool value);

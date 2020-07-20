@@ -5,7 +5,13 @@ state_space:
   y_lower: -1000.0
   y_upper: 1000.0
   turning_radius: 10.0
-  
+
+state_validator_ros:
+  grid_map_frame: world
+  grid_map_msg_topic: grid_map
+  grid_map_resolution: 0.1
+  grid_map_obstacle_layer_name: traversability
+
 planner_ros:
   nav_msgs_path_topic: ompl_rs_planner_ros/nav_msgs_path
   planning_service_name: ompl_rs_planner_ros/planning_service

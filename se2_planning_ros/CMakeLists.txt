@@ -7,6 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SRC_FILES
   src/OmplReedsSheppPlannerRos.cpp
+  src/GridMapLazyStateValidatorRos.cpp
   src/loaders.cpp
   src/PlannerRos.cpp
 )
