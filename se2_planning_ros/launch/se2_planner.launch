@@ -18,6 +18,8 @@
 		type="se2_planner_node" output="screen" launch-prefix="">
 	</node>
 
+	<include file="$(find se2_grid_map_test)/launch/se2_grid_map_test.launch"/>
+
 	<node name="rviz" pkg="rviz" type="rviz"
 		args="-d $(arg rviz_config_file)" required="true"
 		if="$(arg launch_rviz)" />
