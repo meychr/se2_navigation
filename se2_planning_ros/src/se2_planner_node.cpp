@@ -8,12 +8,32 @@
 #include <ros/ros.h>
 
 #include <grid_map_ros/grid_map_ros.hpp>
+#include "se2_planning/OmplReedsSheppPlanner.hpp"
 #include "se2_planning_ros/GridMapLazyStateValidatorRos.hpp"
 #include "se2_planning_ros/loaders.hpp"
 
-int main(int argc, char** argv) {
-  using namespace se2_planning;
+using namespace se2_planning;
 
+auto planner = std::make_shared<OmplReedsSheppPlanner>();
+
+void gridMapCallback(const grid_map_msgs::GridMap& msg) {
+  grid_map::GridMap map;
+  grid_map::GridMapRosConverter::fromMessage(msg, map);
+  // Grid map is symmetric around position
+  grid_map::Position mapPosition;
+  mapPosition = map.getPosition();
+  grid_map::Length mapLength;
+  mapLength = map.getLength();
+  ompl::base::RealVectorBounds bounds(2);
+  bounds.low[0] = mapPosition.x() - mapLength.x() / 2.0;
+  bounds.low[1] = mapPosition.y() - mapLength.y() / 2.0;
+  bounds.high[0] = mapPosition.x() + mapLength.x() / 2.0;
+  bounds.high[1] = mapPosition.y() + mapLength.y() / 2.0;
+  ROS_INFO_STREAM("pos: " << mapPosition.x() << ", " << mapPosition.y() << ", length: " << mapLength.x() << ", " << mapLength.y());
+  planner->updateStateSpaceBounds(bounds);
+}
+
+int main(int argc, char** argv) {
   ros::init(argc, argv, "se2_planner_node");
   ros::NodeHandlePtr nh(new ros::NodeHandle("~"));
 
@@ -22,7 +42,6 @@ int main(int argc, char** argv) {
   const auto plannerParameters = loadOmplReedsSheppPlannerParameters(filename);
   const auto plannerRosParameters = loadOmplReedsSheppPlannerRosParameters(filename);
   const auto stateValidatorRosParameters = loadGridMapLazyStateValidatorRosParameters(filename);
-  auto planner = std::make_shared<OmplReedsSheppPlanner>();
   planner->setParameters(plannerParameters);
 
   // Create initial grid map
@@ -41,6 +60,8 @@ int main(int argc, char** argv) {
   plannerRos.setPlanningStrategy(planner);
   plannerRos.setParameters(plannerRosParameters);
   plannerRos.initialize();
+
+  ros::Subscriber mapSub = nh->subscribe(stateValidatorRosParameters.gridMapMsgTopic_, 1, gridMapCallback);
 
   ros::spin();
 

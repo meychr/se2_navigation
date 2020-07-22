@@ -66,6 +66,10 @@ bool OmplPlanner::initialize() {
   return true;
 }
 
+void OmplPlanner::updateStateSpaceBounds(const ompl::base::RealVectorBounds& bounds) {
+  throw std::runtime_error("Not implemented");
+}
+
 void OmplPlanner::setMaxPlanningDuration(double T) {
   maxPlanningDuration_ = T;
 }
