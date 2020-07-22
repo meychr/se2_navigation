@@ -37,7 +37,7 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
 
  private:
   void initRos();
-  void mapCb(const grid_map_msgs::GridMap& map);
+  void mapCb(const grid_map_msgs::GridMap& msg);
 
   ros::NodeHandlePtr nh_;
   GridMapLazyStateValidatorRosParameters parameters_;
