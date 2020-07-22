@@ -11,6 +11,7 @@ GridMapTest::GridMapTest(ros::NodeHandlePtr nh) : nh_(nh) {}
 void GridMapTest::initRos(){
   mapPub_ = nh_->advertise<grid_map_msgs::GridMap>("grid_map", 1, true);
   obstacleSub_ = nh_->subscribe("obstacle", 1, &GridMapTest::obstacleCb, this);
+  positionSub_ = nh_->subscribe("position", 1, &GridMapTest::positionCb, this);
 }
 
 void GridMapTest::loadParameters(){
@@ -55,6 +56,14 @@ void GridMapTest::obstacleCb(geometry_msgs::Point position) {
     }
   }
 
+  publishMap();
+}
+
+void GridMapTest::positionCb(geometry_msgs::Point position) {
+  grid_map::Position mapPosition;
+  mapPosition.x() = position.x;
+  mapPosition.y() = position.y;
+  map_.setPosition(mapPosition);
   publishMap();
 }
 
