@@ -14,12 +14,15 @@
 
 
 	<!-- Nodes -->
+	<!-- Main node -->
 	<node name="se2_planner_node" pkg="se2_planning_ros"
 		type="se2_planner_node" output="screen" launch-prefix="">
 	</node>
 
+	<!-- Helper node to generate test maps -->
 	<include file="$(find se2_grid_map_test)/launch/se2_grid_map_test.launch"/>
 
+	<!-- RViz -->
 	<node name="rviz" pkg="rviz" type="rviz"
 		args="-d $(arg rviz_config_file)" required="true"
 		if="$(arg launch_rviz)" />

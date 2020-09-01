@@ -17,6 +17,7 @@ using namespace se2_planning;
 auto planner = std::make_shared<OmplReedsSheppPlanner>();
 
 void gridMapCallback(const grid_map_msgs::GridMap& msg) {
+  // Update planner bounds when new map is published, placed here due to class structure
   grid_map::GridMap map;
   grid_map::GridMapRosConverter::fromMessage(msg, map);
   // Grid map is symmetric around position
@@ -51,6 +52,7 @@ int main(int argc, char** argv) {
   gridMap.add(stateValidatorRosParameters.gridMapObstacleLayerName_, 0.0);
 
   // Set grid map state validator
+  // TODO adapt footprint, move to param?
   planner->setStateValidator(se2_planning::createGridMapLazyStateValidatorRos(nh, stateValidatorRosParameters, gridMap,
                                                                               se2_planning::computeFootprint(1.0, 0.0, 0.5, 0.5),
                                                                               stateValidatorRosParameters.gridMapObstacleLayerName_));
@@ -61,6 +63,7 @@ int main(int argc, char** argv) {
   plannerRos.setParameters(plannerRosParameters);
   plannerRos.initialize();
 
+  // Callback to update OMPL planner bounds when map changes
   ros::Subscriber mapSub = nh->subscribe(stateValidatorRosParameters.gridMapMsgTopic_, 1, gridMapCallback);
 
   ros::spin();
