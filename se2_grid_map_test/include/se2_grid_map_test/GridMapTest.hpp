@@ -17,7 +17,7 @@ public:
   void initRos();
   bool initialize();
   void publishMap();
-  void loadParameters();
+  bool loadParameters();
 
 protected:
   void obstacleCb(geometry_msgs::Point position);
@@ -33,6 +33,10 @@ private:
   std::string mapFrameId_;
   std::string layerName_;
   double mapResolution_;
+  double mapPositionX_;
+  double mapPositionY_;
+  double mapLength_;
+  double mapWidth_;
   double obstacleLength_;
   double obstacleWidth_;
 };

@@ -9,7 +9,9 @@
 
 	<!-- Nodes -->
 	<node name="se2_grid_map_test_node" pkg="se2_grid_map_test"
-		type="se2_grid_map_test_node" output="screen" launch-prefix="">
+		  type="se2_grid_map_test_node" output="screen"
+	      launch-prefix="">
+		<rosparam file="$(find se2_grid_map_test)/config/default.yaml"/>
 		
 		<remap from="/se2_grid_map_test_node/grid_map" to="/se2_planner_node/grid_map"/>
 	</node>

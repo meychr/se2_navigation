@@ -14,24 +14,29 @@ void GridMapTest::initRos(){
   positionSub_ = nh_->subscribe("position", 1, &GridMapTest::positionCb, this);
 }
 
-void GridMapTest::loadParameters(){
-  mapFrameId_ = "world";
-  layerName_ = "traversability";
-  mapResolution_ = 0.1;
-  obstacleLength_ = 3;
-  obstacleWidth_ = 4;
+bool GridMapTest::loadParameters(){
+  if (!nh_->getParam("map/frame_id", mapFrameId_)) return false;
+  if (!nh_->getParam("map/layer_name", layerName_)) return false;
+  if (!nh_->getParam("map/resolution", mapResolution_)) return false;
+  if (!nh_->getParam("map/position/x", mapPositionX_)) return false;
+  if (!nh_->getParam("map/position/y", mapPositionY_)) return false;
+  if (!nh_->getParam("map/length", mapLength_)) return false;
+  if (!nh_->getParam("map/width", mapWidth_)) return false;
+  if (!nh_->getParam("obstacle/length", obstacleLength_)) return false;
+  if (!nh_->getParam("obstacle/width", obstacleWidth_)) return false;
+  return true;
 }
 
 bool GridMapTest::initialize() {
-  loadParameters();
+  if (!loadParameters()) {
+    ROS_ERROR("ROS parameters could not be loaded.");
+  }
   initRos();
 
-  double mapLengthX = 20.0;
-  double mapLengthY = 20.0;
   map_.setFrameId(mapFrameId_);
   map_.setTimestamp(ros::Time::now().toNSec());
-  map_.setGeometry(grid_map::Length(mapLengthX, mapLengthY), mapResolution_,
-                   grid_map::Position(0, 0));  // adjust planner parameters as well!
+  map_.setGeometry(grid_map::Length(mapLength_, mapWidth_), mapResolution_,
+                   grid_map::Position(mapPositionX_, mapPositionY_));  // TODO adjust planner parameters as well!
   map_.add(layerName_, 0.0);
 }
 
@@ -48,6 +53,7 @@ void GridMapTest::obstacleCb(geometry_msgs::Point position) {
   map_[layerName_].setConstant(0.0);
 
   // Add obstacles to traversability layer
+  // TODO add shift along y axis
   for (grid_map::GridMapIterator iterator(map_); !iterator.isPastEnd(); ++iterator) {
     grid_map::Position position;
     map_.getPosition(*iterator, position);
