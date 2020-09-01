@@ -5,8 +5,8 @@ map:
   position:
     x:          0.0
     y:          0.0
-  length:       20.0  # x dimension
-  width:        20.0  # y dimension
+  length:       50.0  # x dimension
+  width:        50.0  # y dimension
 obstacle:
-  length:       3.0
-  width:        4.0
+  length:       1.0
+  width:        2.0
