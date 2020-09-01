@@ -43,10 +43,6 @@ void SimplePathTracker::advanceStateMachine() {
     std::cout << "Going to nop state (tracking done)" << std::endl;
   }
 
-  if (isSegmentTrackingFinished) {
-    std::cout << "Segment changed" << std::endl;
-  }
-
   if (currentFSMState_ == States::Driving && isSegmentTrackingFinished) {
     // go to waiting state state
     currentFSMState_ = States::Waiting;
