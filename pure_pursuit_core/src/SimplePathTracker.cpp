@@ -121,18 +121,24 @@ void SimplePathTracker::stopTracking() {
 }
 
 void SimplePathTracker::printFSMState(States FSMState) {
-  switch (FSMState) {
-    case States::NoOperation:
-      std::cout << "States::NoOperation" << std::endl;
-      break;
-    case States::Driving:
-      std::cout << "States::Driving" << std::endl;
-      break;
-    case States::Waiting:
-      std::cout << "States::Waiting" << std::endl;
-      break;
-    default:
-      std::cout << "No valid state" << std::endl;
+  // Only print state if it changed from the last function call
+  static States previousFSMState = States::NoOperation;
+
+  if (previousFSMState != FSMState) {
+    switch (FSMState) {
+      case States::NoOperation:
+        std::cout << "States::NoOperation" << std::endl;
+        break;
+      case States::Driving:
+        std::cout << "States::Driving" << std::endl;
+        break;
+      case States::Waiting:
+        std::cout << "States::Waiting" << std::endl;
+        break;
+      default:
+        std::cout << "No valid state" << std::endl;
+    }
+    previousFSMState = FSMState;
   }
 }
 
