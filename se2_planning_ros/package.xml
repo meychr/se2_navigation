@@ -16,6 +16,7 @@
 	<depend>yaml-cpp</depend>
 	<depend>se2_navigation_msgs</depend>
 
+	<exec_depend>se2_grid_map_test</exec_depend>
 	<exec_depend>se2_planning_rviz</exec_depend>
 
 	<depend>grid_map_ros</depend>
