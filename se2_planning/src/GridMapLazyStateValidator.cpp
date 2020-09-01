@@ -100,6 +100,7 @@ bool isInCollision(const SE2state& state, const std::vector<Vertex>& footprint, 
       const auto v = transformOperator(vertex);
       grid_map::Index id;
       gridMap.getIndex(grid_map::Position(v.x_, v.y_), id);
+      // TODO handle out of bounds case???
       occupancy = data(id.x(), id.y());
     } catch (const std::out_of_range& e) {
       return true;
