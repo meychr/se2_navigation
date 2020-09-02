@@ -24,6 +24,7 @@ void GridMapLazyStateValidatorRos::initialize() {
 }
 
 void GridMapLazyStateValidatorRos::initializeMap() {
+  // TODO publishing of map not working
   std::string mapFrameId_ = parameters_.gridMapFrame_;
   double mapLengthX = 20.0;
   double mapLengthY = 20.0;
