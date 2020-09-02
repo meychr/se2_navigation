@@ -9,4 +9,4 @@ map:
   width:        50.0  # y dimension
 obstacle:
   length:       1.0
-  width:        2.0
+  width:        0.5
