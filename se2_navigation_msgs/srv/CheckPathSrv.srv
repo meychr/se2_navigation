@@ -1,0 +1,7 @@
+# Request
+PathMsg 		path
+---
+# Response
+bool            valid
+int64           nextValidPathSegment
+int64           nextValidPoint
