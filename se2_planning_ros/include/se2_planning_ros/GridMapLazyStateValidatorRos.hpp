@@ -9,8 +9,10 @@
 
 #include <ros/ros.h>
 
+#include <se2_navigation_msgs/CheckPathSrv.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 #include "se2_planning/GridMapLazyStateValidator.hpp"
+#include "se2_planning_ros/OmplReedsSheppPlannerRos.hpp"
 
 #include <string>
 
@@ -38,6 +40,7 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
  private:
   void initRos();
   void mapCb(const grid_map_msgs::GridMap& msg);
+  bool checkPathServer(se2_navigation_msgs::CheckPathSrv::Request& req, se2_navigation_msgs::CheckPathSrv::Response& res);
 
   ros::NodeHandlePtr nh_;
   GridMapLazyStateValidatorRosParameters parameters_;
@@ -47,6 +50,7 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
   ros::Subscriber mapSubscriber_;
   ros::Publisher mapPublisher_;
   bool newMapAvailable_ = false;
+  ros::ServiceServer checkPathServer_;
 };
 
 std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(const ros::NodeHandlePtr nh,

@@ -63,9 +63,36 @@ void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {
   }
 }
 
+bool GridMapLazyStateValidatorRos::checkPathServer(se2_navigation_msgs::CheckPathSrv::Request& req,
+                                                   se2_navigation_msgs::CheckPathSrv::Response& res) {
+  // TODO check issue with updates of map?
+  // TODO how to handle case where all points are invalid?
+  res.valid = true;
+  res.nextValidPathSegment = 0;
+  res.nextValidPoint = 0;
+  for (int idx_segment = 0; idx_segment < req.path.segment.size(); idx_segment++) {
+    for (int idx_point = 0; idx_point < req.path.segment[idx_segment].points.size(); idx_point++) {
+      if (req.path.segment[idx_segment].points[idx_point].orientation.w == 0) {
+        ROS_ERROR("Invalid quaternion passed to check path server.");
+      }
+      SE2state state;
+      state = convert(req.path.segment[idx_segment].points[idx_point]);
+      if (!isStateValid(state)) {
+        res.valid = false;
+        res.nextValidPathSegment = idx_segment + 1;
+        res.nextValidPoint = idx_point + 1;
+      }
+    }
+  }
+  return true;
+}
+
 void GridMapLazyStateValidatorRos::initRos() {
+  // Visualize map used in state validator in rviz
   mapPublisher_ = nh_->advertise<grid_map_msgs::GridMap>("map_debug", 1);
+  // Input topic for grid map
   mapSubscriber_ = nh_->subscribe(parameters_.gridMapMsgTopic_, 1, &GridMapLazyStateValidatorRos::mapCb, this);
+  checkPathServer_ = nh_->advertiseService("check_path", &GridMapLazyStateValidatorRos::checkPathServer, this);
 }
 
 void GridMapLazyStateValidatorRos::publishMap() const {
