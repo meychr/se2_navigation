@@ -44,6 +44,9 @@ Run the main node with
 	
 By publishing a message to the `obstacle` or `position` topic the map can be manipulated.
  
+    rostopic pub /se2_grid_map_test_node/obstacle geometry_msgs/Point "{x: 2.0, y: 0.0, z: 0.0}" -1
+
+    
 ## Config files
 
 config/
@@ -96,7 +99,7 @@ config/
 
 * **`map/position/y`** (float, default: 0.0)
 
-Position in reference frame frame_id.
+    Position in reference frame frame_id.
 	
 * **`map/length`** (float, default: 20.0)
 

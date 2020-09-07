@@ -53,11 +53,11 @@ void GridMapTest::obstacleCb(geometry_msgs::Point position) {
   map_[layerName_].setConstant(0.0);
 
   // Add obstacles to traversability layer
-  // TODO add shift along y axis
   for (grid_map::GridMapIterator iterator(map_); !iterator.isPastEnd(); ++iterator) {
     grid_map::Position position;
     map_.getPosition(*iterator, position);
-    if (position.x() < (x+obstacleLength_) && position.x() > x && fabs(position.y()) < obstacleWidth_) {
+    if (position.x() < (x + obstacleLength_ / 2.0) && position.x() > (x - obstacleLength_ / 2.0)
+        && position.y() < (y + obstacleWidth_ / 2.0) && position.y() > (y - obstacleWidth_ / 2.0)) {
       map_.at(layerName_, *iterator) = 1.0;  // obstacles
     }
   }
