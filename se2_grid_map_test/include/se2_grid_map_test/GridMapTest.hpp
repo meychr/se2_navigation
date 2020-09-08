@@ -16,6 +16,7 @@ public:
 
   void initRos();
   bool initialize();
+  void initMap();
   void publishMap();
   bool loadParameters();
 

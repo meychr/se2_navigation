@@ -32,11 +32,15 @@ bool GridMapTest::initialize() {
     ROS_ERROR("ROS parameters could not be loaded.");
   }
   initRos();
+  initMap();
+  publishMap();
+}
 
+void GridMapTest::initMap() {
   map_.setFrameId(mapFrameId_);
   map_.setTimestamp(ros::Time::now().toNSec());
   map_.setGeometry(grid_map::Length(mapLength_, mapWidth_), mapResolution_,
-                   grid_map::Position(mapPositionX_, mapPositionY_));  // TODO adjust planner parameters as well!
+                   grid_map::Position(mapPositionX_, mapPositionY_));
   map_.add(layerName_, 0.0);
 }
 
