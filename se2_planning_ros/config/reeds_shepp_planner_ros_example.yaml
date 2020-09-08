@@ -7,10 +7,21 @@ state_space:
   turning_radius: 10.0
 
 state_validator_ros:
-  grid_map_frame: map
-  grid_map_msg_topic: grid_map
-  grid_map_resolution: 0.1
-  grid_map_obstacle_layer_name: traversability
+  grid_map_frame:                   map
+  grid_map_msg_topic:               grid_map
+  grid_map_obstacle_layer_name:     traversability
+  # grid map dimensions/geometry
+  grid_map_resolution:              0.1
+  grid_map_length:                  20.0
+  grid_map_width:                   20.0
+  grid_map_position_x:              5.0
+  grid_map_position_y:              0.0
+  grid_map_default_value:           0.0
+  # Robot footprint for collision checking
+  robot_footprint_length_forward:   0.75
+  robot_footprint_length_backward:  0.75
+  robot_footprint_width_left:       0.50
+  robot_footprint_width_right:      0.50
 
 planner_ros:
   nav_msgs_path_topic: ompl_rs_planner_ros/nav_msgs_path

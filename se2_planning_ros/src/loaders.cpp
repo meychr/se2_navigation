@@ -70,6 +70,15 @@ GridMapLazyStateValidatorRosParameters loadGridMapLazyStateValidatorRosParameter
   parameters.gridMapObstacleLayerName_ = node["grid_map_obstacle_layer_name"].as<std::string>();
   parameters.gridMapMsgTopic_ = node["grid_map_msg_topic"].as<std::string>();
   parameters.gridMapResolution_ = node["grid_map_resolution"].as<double>();
+  parameters.gridMapLength_ = node["grid_map_length"].as<double>();
+  parameters.gridMapWidth_ = node["grid_map_width"].as<double>();
+  parameters.gridMapPositionX_ = node["grid_map_position_x"].as<double>();
+  parameters.gridMapPositionY_ = node["grid_map_position_y"].as<double>();
+  parameters.gridMapDefaultValue_ = node["grid_map_default_value"].as<double>();
+  parameters.robotFootPrintLengthForward_ = node["robot_footprint_length_forward"].as<double>();
+  parameters.robotFootPrintLengthBackward_ = node["robot_footprint_length_backward"].as<double>();
+  parameters.robotFootPrintWidthLeft_ = node["robot_footprint_width_left"].as<double>();
+  parameters.robotFootPrintWidthRight_ = node["robot_footprint_width_right"].as<double>();
 
   return parameters;
 }

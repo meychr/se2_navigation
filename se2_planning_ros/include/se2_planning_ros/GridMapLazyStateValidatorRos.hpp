@@ -23,6 +23,15 @@ struct GridMapLazyStateValidatorRosParameters {
   std::string gridMapMsgTopic_ = "state_validator_ros/traversability_map";
   std::string gridMapObstacleLayerName_ = "traversability";  // redundant, already defined by GridMapStateValidator
   double gridMapResolution_ = 0.2;
+  double gridMapLength_ = 20.0;
+  double gridMapWidth_ = 20.0;
+  double gridMapPositionX_ = 0.0;
+  double gridMapPositionY_ = 0.0;
+  double gridMapDefaultValue_ = 0.0;
+  double robotFootPrintLengthForward_ = 0.75;
+  double robotFootPrintLengthBackward_ = 0.75;
+  double robotFootPrintWidthLeft_ = 0.5;
+  double robotFootPrintWidthRight_ = 0.5;
 };
 
 class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {

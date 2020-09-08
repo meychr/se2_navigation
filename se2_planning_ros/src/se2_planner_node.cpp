@@ -14,6 +14,8 @@
 
 using namespace se2_planning;
 
+// Make planner global to have access to it in the gridMapCallback,
+// required to update planner bounds in dependence of grid map
 auto planner = std::make_shared<OmplReedsSheppPlanner>();
 
 void gridMapCallback(const grid_map_msgs::GridMap& msg) {
@@ -48,14 +50,19 @@ int main(int argc, char** argv) {
   // Create initial grid map
   grid_map::GridMap gridMap;
   gridMap.setFrameId(stateValidatorRosParameters.gridMapFrame_);
-  gridMap.setGeometry(grid_map::Length(20.0, 20.0), 0.1, grid_map::Position(0, 0));  // adjust planner parameters as well!
-  gridMap.add(stateValidatorRosParameters.gridMapObstacleLayerName_, 0.0);
+  gridMap.setGeometry(grid_map::Length(stateValidatorRosParameters.gridMapLength_, stateValidatorRosParameters.gridMapWidth_),
+                      stateValidatorRosParameters.gridMapResolution_,
+                      grid_map::Position(stateValidatorRosParameters.gridMapPositionX_, stateValidatorRosParameters.gridMapPositionY_));
+  gridMap.add(stateValidatorRosParameters.gridMapObstacleLayerName_, stateValidatorRosParameters.gridMapDefaultValue_);
 
   // Set grid map state validator
-  // TODO adapt footprint, move to param?
-  planner->setStateValidator(se2_planning::createGridMapLazyStateValidatorRos(nh, stateValidatorRosParameters, gridMap,
-                                                                              se2_planning::computeFootprint(1.0, 0.0, 0.5, 0.5),
-                                                                              stateValidatorRosParameters.gridMapObstacleLayerName_));
+  // TODO adapt footprint
+  planner->setStateValidator(se2_planning::createGridMapLazyStateValidatorRos(
+      nh, stateValidatorRosParameters, gridMap,
+      se2_planning::computeFootprint(
+          stateValidatorRosParameters.robotFootPrintLengthForward_, stateValidatorRosParameters.robotFootPrintLengthBackward_,
+          stateValidatorRosParameters.robotFootPrintWidthLeft_, stateValidatorRosParameters.robotFootPrintWidthRight_),
+      stateValidatorRosParameters.gridMapObstacleLayerName_));
 
   // Setup ROS interface and start node
   se2_planning::OmplReedsSheppPlannerRos plannerRos(nh);
