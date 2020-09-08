@@ -22,8 +22,6 @@ int main(int argc, char** argv) {
   // rostopic pub /se2_grid_map_test_node/obstacle geometry_msgs/Point "{x: 1.0, y: 0.0, z: 0.0}" -1
   // to trigger new map
 
-  // TODO add position offset and y width
-
   ros::spin();
 
   return 0;

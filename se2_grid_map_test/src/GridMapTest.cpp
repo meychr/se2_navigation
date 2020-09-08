@@ -24,6 +24,16 @@ bool GridMapTest::loadParameters(){
   if (!nh_->getParam("map/width", mapWidth_)) return false;
   if (!nh_->getParam("obstacle/length", obstacleLength_)) return false;
   if (!nh_->getParam("obstacle/width", obstacleWidth_)) return false;
+  if (obstacleLength_ / 2.0 < mapResolution_) {
+    ROS_ERROR_STREAM("obstacle_length " << obstacleLength_ << " is too small for chosen map_resolution "
+                      << mapResolution_ << ". Minimum is two times the map_resolution.");
+    return false;
+  }
+  if (obstacleWidth_ / 2.0 < mapResolution_) {
+    ROS_ERROR_STREAM("obstacle_width " << obstacleWidth_ << " is too small for chosen map_resolution "
+                      << mapResolution_ << ". Minimum is two times the map_resolution.");
+    return false;
+  }
   return true;
 }
 
