@@ -122,9 +122,15 @@ void PlanningPanel::createLayout()
   planningServiceNameEditor_ = new QLineEdit;
   controllerCommandTopicEditor_ = new QLineEdit;
   currStateServiceEditor_ = new QLineEdit;
+  loadGlobalPathServiceEditor_ = new QLineEdit;
+  globalPathFileNameEditor_ = new QLineEdit;
+  pathManagerCommandServiceEditor_ = new QLineEdit;
   topic_layout->addRow(new QLabel(tr("Ctrl command topic:")), controllerCommandTopicEditor_);
   topic_layout->addRow(new QLabel(tr("Planning service:")), planningServiceNameEditor_);
   topic_layout->addRow(new QLabel(tr("Curr State Service:")), currStateServiceEditor_);
+  topic_layout->addRow(new QLabel(tr("Load Global Path Service:")), loadGlobalPathServiceEditor_);
+  topic_layout->addRow(new QLabel(tr("Global Path File Name:")), globalPathFileNameEditor_);
+  topic_layout->addRow(new QLabel(tr("Path Manager Command Service:")), pathManagerCommandServiceEditor_);
   formGroupBox->setLayout(topic_layout);
 
   // Start and goal poses.
@@ -160,6 +166,15 @@ void PlanningPanel::createLayout()
   start_goal_layout->addWidget(currentStateAsStartCheckBox_, 2, 0);
   start_goal_layout->addWidget(new QLabel("Start == current position"), 2, 1);
 
+  // Global planner services
+  QHBoxLayout* service_global_path_layout = new QHBoxLayout;
+  global_plan_request_button_ = new QPushButton("Request Global Plan");
+  global_tracking_command_button_ = new QPushButton("Start Tracking");
+  global_stop_command_button_ = new QPushButton("Stop Tracking");
+  service_global_path_layout->addWidget(global_plan_request_button_);
+  service_global_path_layout->addWidget(global_tracking_command_button_);
+  service_global_path_layout->addWidget(global_stop_command_button_);
+
   // Planner services and publications.
   QHBoxLayout* service_layout = new QHBoxLayout;
   plan_request_button_ = new QPushButton("Request Plan");
@@ -182,6 +197,7 @@ void PlanningPanel::createLayout()
   QVBoxLayout* layout = new QVBoxLayout;
   layout->addWidget(formGroupBox);
   layout->addLayout(start_goal_layout);
+  layout->addLayout(service_global_path_layout);
   layout->addLayout(service_layout);
   layout->addLayout(service_spacebok_layout);
   setLayout(layout);
@@ -196,6 +212,15 @@ void PlanningPanel::createLayout()
           SLOT(updatePathRequestTopic()));
   connect(currStateServiceEditor_, SIGNAL(editingFinished()), this,
           SLOT(updateGetCurrentStateService()));
+  connect(loadGlobalPathServiceEditor_, SIGNAL(editingFinished()), this,
+          SLOT(updateLoadGlobalPathService()));
+  connect(globalPathFileNameEditor_, SIGNAL(editingFinished()), this,
+          SLOT(updateGlobalPathFileName()));
+  connect(pathManagerCommandServiceEditor_, SIGNAL(editingFinished()), this,
+          SLOT(updatePathManagerCommandService()));
+  connect(global_plan_request_button_, SIGNAL(released()), this, SLOT(callGlobalPlanningService()));
+  connect(global_tracking_command_button_, SIGNAL(released()), this, SLOT(callPublishGlobalTrackingCommand()));
+  connect(global_stop_command_button_, SIGNAL(released()), this, SLOT(callPublishGlobalStopTrackingCommand()));
   connect(plan_request_button_, SIGNAL(released()), this, SLOT(callPlanningService()));
   connect(tracking_command_button_, SIGNAL(released()), this, SLOT(callPublishTrackingCommand()));
   connect(stop_command_button_, SIGNAL(released()), this, SLOT(callPublishStopTrackingCommand()));
@@ -241,6 +266,45 @@ void PlanningPanel::setPathRequestTopic(const QString& newPathRequestTopicName)
 {
   if (newPathRequestTopicName != planningServiceName_) {
     planningServiceName_ = newPathRequestTopicName;
+    Q_EMIT configChanged();
+  }
+}
+/////////////////////
+void PlanningPanel::updateLoadGlobalPathService()
+{
+  setLoadGlobalPathService(loadGlobalPathServiceEditor_->text());
+}
+
+void PlanningPanel::setLoadGlobalPathService(const QString& newLoadGlobalPathServiceName)
+{
+  if (newLoadGlobalPathServiceName != loadGlobalPathServiceName_) {
+    loadGlobalPathServiceName_ = newLoadGlobalPathServiceName;
+    Q_EMIT configChanged();
+  }
+}
+/////////////////////
+void PlanningPanel::updateGlobalPathFileName()
+{
+  setGlobalPathFileName(globalPathFileNameEditor_->text());
+}
+
+void PlanningPanel::setGlobalPathFileName(const QString &newGlobalPathFileName)
+{
+  if (newGlobalPathFileName != globalPathFileName_) {
+    globalPathFileName_ = newGlobalPathFileName;
+    Q_EMIT configChanged();
+  }
+}
+/////////////////////
+void PlanningPanel::updatePathManagerCommandService()
+{
+  setPathManagerCommandService(pathManagerCommandServiceEditor_->text());
+}
+
+void PlanningPanel::setPathManagerCommandService(const QString& newPathManagerCommandServiceName)
+{
+  if (newPathManagerCommandServiceName != pathManagerCommandServiceName_) {
+    pathManagerCommandServiceName_ = newPathManagerCommandServiceName;
     Q_EMIT configChanged();
   }
 }
@@ -315,6 +379,9 @@ rviz::Panel::save(config);
 config.mapSetValue("path_request_topic", planningServiceName_);
 config.mapSetValue("get_current_state_service", currentStateServiceName_);
 config.mapSetValue("controller_command_topic", controllerCommandTopicName_);
+config.mapSetValue("load_global_path_service_name", loadGlobalPathServiceName_);
+config.mapSetValue("global_path_file_name", globalPathFileName_);
+config.mapSetValue("path_manager_command_service_name", pathManagerCommandServiceName_);
 }
 
 // Load all configuration data for this panel from the given Config object.
@@ -332,6 +399,18 @@ currStateServiceEditor_->setText(currentStateServiceName_);
 
 if (config.mapGetString("controller_command_topic", &controllerCommandTopicName_)) {
 controllerCommandTopicEditor_->setText(controllerCommandTopicName_);
+}
+
+if (config.mapGetString("load_global_path_service_name", &loadGlobalPathServiceName_)) {
+  loadGlobalPathServiceEditor_->setText(loadGlobalPathServiceName_);
+}
+
+if (config.mapGetString("global_path_file_name", &globalPathFileName_)) {
+  globalPathFileNameEditor_->setText(globalPathFileName_);
+}
+
+if (config.mapGetString("path_manager_command_service_name", &pathManagerCommandServiceName_)) {
+  pathManagerCommandServiceEditor_->setText(pathManagerCommandServiceName_);
 }
 
 }
@@ -356,6 +435,39 @@ interactive_markers_.setPose(pose);
 
 interactive_markers_.updateMarkerPose(id, pose);
 }
+
+void PlanningPanel::callGlobalPlanningService()
+{
+
+  std::thread t([this] {
+
+    std::string service_name = loadGlobalPathServiceName_.toStdString();
+    spacebok_global_planner::GetGlobalPath::Request req;
+    req.filePath = globalPathFileName_.toStdString();
+    spacebok_global_planner::GetGlobalPath::Response res;
+
+    callService(req,res,service_name);
+
+  });
+
+  t.detach();
+
+}
+
+void PlanningPanel::callPublishGlobalTrackingCommand()
+{
+  se2_navigation_msgs::ControllerCommand command;
+  command.command_ = se2_navigation_msgs::ControllerCommand::Command::StartTracking;
+  callSendPathManagerCommandService(command);
+}
+
+void PlanningPanel::callPublishGlobalStopTrackingCommand()
+{
+  se2_navigation_msgs::ControllerCommand command;
+  command.command_ = se2_navigation_msgs::ControllerCommand::Command::StopTracking;
+  callSendPathManagerCommandService(command);
+}
+
 
 void PlanningPanel::callPlanningService()
 {
@@ -430,6 +542,19 @@ void PlanningPanel::callSendControllerCommandService(
 
   req.command = se2_navigation_msgs::convert(command);
   std::string service_name = controllerCommandTopicName_.toStdString();
+  callService(req, res, service_name);
+
+}
+
+void PlanningPanel::callSendPathManagerCommandService(
+  se2_navigation_msgs::ControllerCommand &command) const
+{
+
+  se2_navigation_msgs::SendControllerCommandSrv::Request req;
+  se2_navigation_msgs::SendControllerCommandSrv::Response res;
+
+  req.command = se2_navigation_msgs::convert(command);
+  std::string service_name = pathManagerCommandServiceName_.toStdString();
   callService(req, res, service_name);
 
 }

@@ -14,6 +14,7 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   se2_visualization_ros
   se2_navigation_msgs
   spacebok_msgs
+  spacebok_global_planner
 )
 
 find_package(catkin REQUIRED

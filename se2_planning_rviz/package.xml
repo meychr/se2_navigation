@@ -17,6 +17,7 @@
   <depend>se2_visualization_ros</depend>
   <depend>se2_navigation_msgs</depend>
   <depend>spacebok_msgs</depend>
+  <depend>spacebok_global_planner</depend>
 
   <export>
       <rviz plugin="${prefix}/plugin_description.xml"/>

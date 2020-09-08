@@ -53,6 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "spacebok_msgs/SpacebokControllerState.h"
 #include "spacebok_msgs/SpacebokHighlevelState.h"
+#include "spacebok_global_planner/GetGlobalPath.h"
 
 namespace se2_navigation_msgs {
   struct ControllerCommand;
@@ -97,11 +98,17 @@ class PlanningPanel : public rviz::Panel {
   void updateControllerCommandTopic();
   void updatePathRequestTopic();
   void updateGetCurrentStateService();
+  void updateLoadGlobalPathService();
+  void updateGlobalPathFileName();
+  void updatePathManagerCommandService();
   void startEditing(const std::string& id);
   void finishEditing(const std::string& id);
   void widgetPoseUpdated(const std::string& id,
                          geometry_msgs::Pose& state);
 
+  void callGlobalPlanningService();
+  void callPublishGlobalTrackingCommand();
+  void callPublishGlobalStopTrackingCommand();
   void callPlanningService();
   void callPublishTrackingCommand();
   void callPublishStopTrackingCommand();
@@ -117,10 +124,13 @@ protected:
   void setControllerCommandTopic(const QString& newControllerCommandTopic);
   void setPathRequestTopic(const QString &newPathRequestTopic);
   void setGetCurrentStateService(const QString &newCurrentStateService);
-
+  void setLoadGlobalPathService(const QString& newLoadGlobalPathServiceName);
+  void setGlobalPathFileName(const QString& newGlobalPathFileName);
+  void setPathManagerCommandService(const QString& newPathManagerCommandServiceName);
   void getStartPoseFromWidget(geometry_msgs::Pose *startPoint);
   void getStartPoseFromService(geometry_msgs::Pose *startPoint);
   void callSendControllerCommandService(se2_navigation_msgs::ControllerCommand &command) const;
+  void callSendPathManagerCommandService(se2_navigation_msgs::ControllerCommand &command) const;
 
   // ROS Stuff:
   ros::NodeHandle nh_;
@@ -131,11 +141,17 @@ protected:
   QLineEdit* controllerCommandTopicEditor_;
   QLineEdit* planningServiceNameEditor_;
   QLineEdit* currStateServiceEditor_;
+  QLineEdit* loadGlobalPathServiceEditor_;
+  QLineEdit* globalPathFileNameEditor_;
+  QLineEdit* pathManagerCommandServiceEditor_;
   PoseWidget* start_pose_widget_;
   PoseWidget* goal_pose_widget_;
   QPushButton* plan_request_button_;
   QPushButton* tracking_command_button_;
   QPushButton* stop_command_button_;
+  QPushButton* global_plan_request_button_;
+  QPushButton* global_tracking_command_button_;
+  QPushButton* global_stop_command_button_;
   QPushButton* spacebok_standup_button_;
   QPushButton* spacebok_start_button_;
   QPushButton* spacebok_stop_button_;
@@ -152,6 +168,9 @@ protected:
   QString controllerCommandTopicName_;
   QString planningServiceName_;
   QString currentStateServiceName_;
+  QString pathManagerCommandServiceName_;
+  QString loadGlobalPathServiceName_;
+  QString globalPathFileName_;
 
   // Other state:
   std::string currently_editing_;
