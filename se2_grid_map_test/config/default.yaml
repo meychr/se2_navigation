@@ -1,12 +1,12 @@
 map:
   frame_id:     map
   layer_name:   traversability
-  resolution:   0.1
+  resolution:   1.0
   position:
-    x:          0.0
+    x:          10.0
     y:          0.0
-  length:       50.0  # x dimension
-  width:        50.0  # y dimension
+  length:       20.0  # x dimension
+  width:        20.0  # y dimension
 obstacle:
   length:       1.0
   width:        0.5
