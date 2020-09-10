@@ -54,7 +54,7 @@ void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {
       setGridMap(map_);
       publishMap();
       newMapAvailable_ = true;
-      ROS_INFO_STREAM("GlobalMap: Convert initial map resolution from " << newMap.getResolution() << " to "
+      ROS_DEBUG_STREAM("GlobalMap: Convert initial map resolution from " << newMap.getResolution() << " to "
                                                                         << parameters_.gridMapResolution_ << ".");
     } else {
       ROS_ERROR("GlobalMap: No traversability layer found to load!");
