@@ -113,6 +113,8 @@ void PlanningPanel::onInitialize()
     "/highlevel_state_command", 1);
   spacebokControllerStatePublisher_ = nh_.advertise<spacebok_msgs::SpacebokControllerState>(
     "/controller_state_command", 1);
+  spacebokControlCommandPublisher_ = nh_.advertise<spacebok_msgs::SpacebokHighlevelCommands>(
+    "/highlevel_commands", 1);
 }
 
 void PlanningPanel::createLayout()
@@ -187,9 +189,11 @@ void PlanningPanel::createLayout()
   // Spacebok services.
   QHBoxLayout* service_spacebok_layout = new QHBoxLayout;
   spacebok_standup_button_ = new QPushButton("Standup");
+  spacebok_init_button_ = new QPushButton("Init");
   spacebok_start_button_ = new QPushButton("Walk");
   spacebok_stop_button_ = new QPushButton("Stop");
   service_spacebok_layout->addWidget(spacebok_standup_button_);
+  service_spacebok_layout->addWidget(spacebok_init_button_);
   service_spacebok_layout->addWidget(spacebok_start_button_);
   service_spacebok_layout->addWidget(spacebok_stop_button_);
 
@@ -225,6 +229,7 @@ void PlanningPanel::createLayout()
   connect(tracking_command_button_, SIGNAL(released()), this, SLOT(callPublishTrackingCommand()));
   connect(stop_command_button_, SIGNAL(released()), this, SLOT(callPublishStopTrackingCommand()));
   connect(spacebok_standup_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStandUpCommand()));
+  connect(spacebok_init_button_, SIGNAL(released()), this, SLOT(executeSpacebokInitMotion()));
   connect(spacebok_start_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStartCommand()));
   connect(spacebok_stop_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStopCommand()));
 }
@@ -501,6 +506,48 @@ callService(req,res,service_name);
 
 t.detach();
 
+}
+
+void PlanningPanel::executeSpacebokInitMotion() const
+{
+
+  std::thread t([this] {
+
+    double maxPositionOffset = 0.1;
+    spacebok_msgs::SpacebokHighlevelCommands controlCommand;
+    controlCommand.header.frame_id = "";
+    //! Default values
+    controlCommand.height = 0.1;
+    controlCommand.velocity = 0;
+    controlCommand.turning_rate = 0;
+    //! Set standby pose
+    controlCommand.position_offset = {maxPositionOffset, 0};
+    controlCommand.quaternion.w = 1;
+    controlCommand.quaternion.x = 0;
+    controlCommand.quaternion.y = 0;
+    controlCommand.quaternion.z = 0;
+
+    //! Move back and forth in standby
+    ros::Rate rate(1.0);
+    int counter = 0;
+    while(ros::ok() && counter < 4) {
+      controlCommand.header.seq = counter;
+      controlCommand.header.stamp = ros::Time::now();
+      controlCommand.position_offset[0] = -controlCommand.position_offset[0];
+      spacebokControlCommandPublisher_.publish(controlCommand);
+      counter++;
+      rate.sleep();
+    }
+
+    //! Neutral position in the end
+    counter++;
+    controlCommand.header.seq = counter;
+    controlCommand.header.stamp = ros::Time::now();
+    controlCommand.position_offset[0] = 0.0;
+    spacebokControlCommandPublisher_.publish(controlCommand);
+  });
+
+  t.detach();
 }
 
 void PlanningPanel::getStartPoseFromWidget(geometry_msgs::Pose *startPoint)
