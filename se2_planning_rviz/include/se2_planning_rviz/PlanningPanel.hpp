@@ -55,6 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "spacebok_msgs/SpacebokHighlevelState.h"
 #include "spacebok_msgs/SpacebokHighlevelCommands.h"
 #include "spacebok_global_planner/GetGlobalPath.h"
+#include "std_srvs/Trigger.h"
 
 namespace se2_navigation_msgs {
   struct ControllerCommand;
@@ -117,6 +118,7 @@ class PlanningPanel : public rviz::Panel {
   void callPublishSpacebokStartCommand() const;
   void callPublishSpacebokStopCommand() const;
   void executeSpacebokInitMotion() const;
+  void callResetOrientationEstimation() const;
   void publishSpacebokHighlevelState(spacebok_msgs::SpacebokHighlevelState &state) const;
   void publishSpacebokControllerState(spacebok_msgs::SpacebokControllerState &state) const;
 
@@ -159,6 +161,7 @@ protected:
   QPushButton* spacebok_init_button_;
   QPushButton* spacebok_start_button_;
   QPushButton* spacebok_stop_button_;
+  QPushButton* orientation_estimation_reset_button_;
   QCheckBox *currentStateAsStartCheckBox_;
 
 

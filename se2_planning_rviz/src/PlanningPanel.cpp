@@ -197,6 +197,11 @@ void PlanningPanel::createLayout()
   service_spacebok_layout->addWidget(spacebok_start_button_);
   service_spacebok_layout->addWidget(spacebok_stop_button_);
 
+  // GPS orientation estimation services.
+  QHBoxLayout* service_orientation_estimation_layout = new QHBoxLayout;
+  orientation_estimation_reset_button_ = new QPushButton("Reset Orientation Estimation");
+  service_orientation_estimation_layout->addWidget(orientation_estimation_reset_button_);
+
   // First the names, then the start/goal, then service buttons.
   QVBoxLayout* layout = new QVBoxLayout;
   layout->addWidget(formGroupBox);
@@ -204,6 +209,7 @@ void PlanningPanel::createLayout()
   layout->addLayout(service_global_path_layout);
   layout->addLayout(service_layout);
   layout->addLayout(service_spacebok_layout);
+  layout->addLayout(service_orientation_estimation_layout);
   setLayout(layout);
 
   //set the default parameters
@@ -232,6 +238,7 @@ void PlanningPanel::createLayout()
   connect(spacebok_init_button_, SIGNAL(released()), this, SLOT(executeSpacebokInitMotion()));
   connect(spacebok_start_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStartCommand()));
   connect(spacebok_stop_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStopCommand()));
+  connect(orientation_estimation_reset_button_, SIGNAL(released()), this, SLOT(callResetOrientationEstimation()));
 }
 
 void PlanningPanel::updateControllerCommandTopic()
@@ -548,6 +555,13 @@ void PlanningPanel::executeSpacebokInitMotion() const
   });
 
   t.detach();
+}
+
+void PlanningPanel::callResetOrientationEstimation() const
+{
+  std_srvs::Trigger::Request req;
+  std_srvs::Trigger::Response res;
+  callService(req, res, "/gps_orientation_estimation/reset");
 }
 
 void PlanningPanel::getStartPoseFromWidget(geometry_msgs::Pose *startPoint)
