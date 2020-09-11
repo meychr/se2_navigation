@@ -169,6 +169,7 @@ void PlanningPanel::createLayout()
   start_goal_layout->addWidget(new QLabel("Start == current position"), 2, 1);
 
   // Global planner services
+  QGroupBox *globalNavigationGroupBox = new QGroupBox(tr("Global Navigation"));
   QHBoxLayout* service_global_path_layout = new QHBoxLayout;
   global_plan_request_button_ = new QPushButton("Request Global Plan");
   global_tracking_command_button_ = new QPushButton("Start Tracking");
@@ -176,8 +177,11 @@ void PlanningPanel::createLayout()
   service_global_path_layout->addWidget(global_plan_request_button_);
   service_global_path_layout->addWidget(global_tracking_command_button_);
   service_global_path_layout->addWidget(global_stop_command_button_);
+  service_global_path_layout->setContentsMargins(0, 0, 0, 0);
+  globalNavigationGroupBox->setLayout(service_global_path_layout);
 
   // Planner services and publications.
+  QGroupBox *localNavigationGroupBox = new QGroupBox(tr("Local Navigation"));
   QHBoxLayout* service_layout = new QHBoxLayout;
   plan_request_button_ = new QPushButton("Request Plan");
   tracking_command_button_ = new QPushButton("Start Tracking");
@@ -185,8 +189,11 @@ void PlanningPanel::createLayout()
   service_layout->addWidget(plan_request_button_);
   service_layout->addWidget(tracking_command_button_);
   service_layout->addWidget(stop_command_button_);
+  service_layout->setContentsMargins(0, 0, 0, 0);
+  localNavigationGroupBox->setLayout(service_layout);
 
   // Spacebok services.
+  QGroupBox *spacebokGroupBox = new QGroupBox(tr("Spacebok Interface"));
   QHBoxLayout* service_spacebok_layout = new QHBoxLayout;
   spacebok_standup_button_ = new QPushButton("Standup");
   spacebok_init_button_ = new QPushButton("Init");
@@ -196,20 +203,25 @@ void PlanningPanel::createLayout()
   service_spacebok_layout->addWidget(spacebok_init_button_);
   service_spacebok_layout->addWidget(spacebok_start_button_);
   service_spacebok_layout->addWidget(spacebok_stop_button_);
+  service_spacebok_layout->setContentsMargins(0, 0, 0, 0);
+  spacebokGroupBox->setLayout(service_spacebok_layout);
 
   // GPS orientation estimation services.
+  QGroupBox *orientationEstimationGroupBox = new QGroupBox(tr("GPS Orientation Estimation"));
   QHBoxLayout* service_orientation_estimation_layout = new QHBoxLayout;
   orientation_estimation_reset_button_ = new QPushButton("Reset Orientation Estimation");
-  service_orientation_estimation_layout->addWidget(orientation_estimation_reset_button_);
+  service_orientation_estimation_layout->addWidget(orientation_estimation_reset_button_, 1, Qt::AlignTop);
+  service_orientation_estimation_layout->setContentsMargins(0, 0, 0, 0);
+  orientationEstimationGroupBox->setLayout(service_orientation_estimation_layout);
 
   // First the names, then the start/goal, then service buttons.
   QVBoxLayout* layout = new QVBoxLayout;
   layout->addWidget(formGroupBox);
   layout->addLayout(start_goal_layout);
-  layout->addLayout(service_global_path_layout);
-  layout->addLayout(service_layout);
-  layout->addLayout(service_spacebok_layout);
-  layout->addLayout(service_orientation_estimation_layout);
+  layout->addWidget(globalNavigationGroupBox);
+  layout->addWidget(localNavigationGroupBox);
+  layout->addWidget(spacebokGroupBox);
+  layout->addWidget(orientationEstimationGroupBox);
   setLayout(layout);
 
   //set the default parameters
