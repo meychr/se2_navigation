@@ -9,7 +9,9 @@ state_space:
 state_validator_ros:
   grid_map_frame:                   map
   grid_map_msg_topic:               grid_map
-  grid_map_obstacle_layer_name:     traversability
+  grid_map_obstacle_layer_name:     obstacle
+  grid_map_state_validity_checking_method: collision
+  grid_map_state_validity_threshold: 0.1
   # grid map dimensions/geometry
   grid_map_resolution:              0.1
   grid_map_length:                  20.0

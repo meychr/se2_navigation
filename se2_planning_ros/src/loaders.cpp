@@ -68,6 +68,15 @@ GridMapLazyStateValidatorRosParameters loadGridMapLazyStateValidatorRosParameter
   auto node = basenode["state_validator_ros"];
   parameters.gridMapFrame_ = node["grid_map_frame"].as<std::string>();
   parameters.gridMapObstacleLayerName_ = node["grid_map_obstacle_layer_name"].as<std::string>();
+  auto stateValidityCheckingMethodName = node["grid_map_state_validity_checking_method"].as<std::string>();
+  if (stateValidityCheckingMethodName == "collision") {
+    parameters.gridMapStateValidityCheckingMethod_ = StateValidityCheckingMethod::COLLISION;
+  } else if (stateValidityCheckingMethodName == "traversability") {
+    parameters.gridMapStateValidityCheckingMethod_ = StateValidityCheckingMethod::TRAVERSABILITY;
+  } else {
+    throw std::runtime_error("Invalid value for StateValidityCheckingMethod. Valid values are 'collision' or 'traversability'");
+  }
+  parameters.gridMapStateValidityThreshold_ = node["grid_map_state_validity_threshold"].as<double>();
   parameters.gridMapMsgTopic_ = node["grid_map_msg_topic"].as<std::string>();
   parameters.gridMapResolution_ = node["grid_map_resolution"].as<double>();
   parameters.gridMapLength_ = node["grid_map_length"].as<double>();

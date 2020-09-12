@@ -15,6 +15,8 @@
 
 namespace se2_planning {
 
+enum StateValidityCheckingMethod : int { COLLISION = 0, TRAVERSABILITY = 1 };
+
 class GridMapLazyStateValidator : public GridMapStateValidator {
   using BASE = GridMapStateValidator;
 
@@ -30,25 +32,37 @@ class GridMapLazyStateValidator : public GridMapStateValidator {
   bool getIsUseRandomizedStrategy() const;
 
   void setIsUseEarlyStoppingHeuristic(bool value);
-  bool setIsUseEarlyStoppingHeuristic() const;
+  bool getIsUseEarlyStoppingHeuristic() const;
 
   void setSeed(int value);
   int getSeed() const;
+
+  void setStateValidityCheckingMethod(StateValidityCheckingMethod value);
+  bool getStateValidityCheckingMethod() const;
+
+  void setStateValidityThreshold(double value);
+  bool getStateValidityThreshold() const;
 
  private:
   std::vector<Vertex> nominalFootprintPoints_;
   bool isInitializeCalled_ = false;
   bool isUseRandomizedStrategy_ = false;
   bool isUseEarlyStoppingHeuristic_ = false;
+  StateValidityCheckingMethod stateValidityCheckingMethod_ = StateValidityCheckingMethod::COLLISION;
+  double stateValidityThreshold_ = 0.5;
   int seed_ = 0;
 };
 
 void computeFootprintPoints(const grid_map::GridMap& gridMap, const RobotFootprint& footprint, std::vector<Vertex>* footprintPoints);
-bool isInCollision(const SE2state& state, const std::vector<Vertex>& nominalFootprintPoints, const grid_map::GridMap& gridMap,
-                   const std::string& obstacleLayer);
+bool isInCollision(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
+                   const std::string& obstacleLayer, const double collisionThreshold);
+bool isTraversable(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
+                   const std::string& traversabilityLayer, const double traversabilityThreshold);
 void addExtraPointsForEarlyStopping(const RobotFootprint& footprint, std::vector<Vertex>* points, int seed);
 std::unique_ptr<GridMapLazyStateValidator> createGridMapLazyStateValidator(const grid_map::GridMap& gridMap,
                                                                            const RobotFootprint& footprint,
-                                                                           const std::string& obstacleLayer);
+                                                                           const std::string& obstacleLayer,
+                                                                           const StateValidityCheckingMethod& stateValidityCheckingMethod,
+                                                                           const double stateValidityThreshold);
 
 } /* namespace se2_planning */

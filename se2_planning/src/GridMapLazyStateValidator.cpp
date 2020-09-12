@@ -25,7 +25,7 @@ bool GridMapLazyStateValidator::getIsUseRandomizedStrategy() const {
 void GridMapLazyStateValidator::setIsUseEarlyStoppingHeuristic(bool value) {
   isUseEarlyStoppingHeuristic_ = value;
 }
-bool GridMapLazyStateValidator::setIsUseEarlyStoppingHeuristic() const {
+bool GridMapLazyStateValidator::getIsUseEarlyStoppingHeuristic() const {
   return isUseEarlyStoppingHeuristic_;
 }
 
@@ -34,6 +34,20 @@ void GridMapLazyStateValidator::setSeed(int value) {
 }
 int GridMapLazyStateValidator::getSeed() const {
   return seed_;
+}
+
+void GridMapLazyStateValidator::setStateValidityCheckingMethod(StateValidityCheckingMethod value) {
+  stateValidityCheckingMethod_ = value;
+}
+bool GridMapLazyStateValidator::getStateValidityCheckingMethod() const {
+  return stateValidityCheckingMethod_;
+}
+
+void GridMapLazyStateValidator::setStateValidityThreshold(double value) {
+  stateValidityThreshold_ = value;
+}
+bool GridMapLazyStateValidator::getStateValidityThreshold() const {
+  return stateValidityThreshold_;
 }
 
 void GridMapLazyStateValidator::initialize() {
@@ -63,7 +77,14 @@ bool GridMapLazyStateValidator::isStateValid(const State& state) const {
   } /* Optimistic and assumes no obstacles */
 
   const auto se2state = *(state.as<SE2state>());
-  return !isInCollision(se2state, nominalFootprintPoints_, gridMap_, obstacleLayerName_);
+  switch (stateValidityCheckingMethod_) {
+    case StateValidityCheckingMethod::COLLISION:
+      return !isInCollision(se2state, nominalFootprintPoints_, gridMap_, obstacleLayerName_, stateValidityThreshold_);
+    case StateValidityCheckingMethod::TRAVERSABILITY:
+      return isTraversable(se2state, nominalFootprintPoints_, gridMap_, obstacleLayerName_, stateValidityThreshold_);
+    default:
+      throw std::runtime_error("Invalid StateValidityCheckingMethod set.");
+  }
 }
 
 void computeFootprintPoints(const grid_map::GridMap& gridMap, const RobotFootprint& footprint, std::vector<Vertex>* footprintPoints) {
@@ -85,7 +106,7 @@ void computeFootprintPoints(const grid_map::GridMap& gridMap, const RobotFootpri
 }
 
 bool isInCollision(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
-                   const std::string& obstacleLayer) {
+                   const std::string& obstacleLayer, const double collisionThreshold) {
   const double Cos = std::cos(state.yaw_);
   const double Sin = std::sin(state.yaw_);
   const double dx = state.x_;
@@ -112,13 +133,47 @@ bool isInCollision(const SE2state& state, const std::vector<Vertex>& footprint, 
       continue;
     }
 
-    const double collisionThreshold = 0.1;
     if (occupancy > collisionThreshold) {
       return true;
     }
   }
 
   return false;
+}
+
+bool isTraversable(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
+                   const std::string& traversabilityLayer, const double traversabilityThreshold) {
+  const double Cos = std::cos(state.yaw_);
+  const double Sin = std::sin(state.yaw_);
+  const double dx = state.x_;
+  const double dy = state.y_;
+  auto transformOperator = [Cos, Sin, dx, dy](const Vertex& v) -> Vertex {
+    return Vertex{Cos * v.x_ - Sin * v.y_ + dx, Sin * v.x_ + Cos * v.y_ + dy};
+  };
+  const auto& data = gridMap.get(traversabilityLayer);
+  for (const auto& vertex : footprint) {
+    double traversability = 1.0;
+    try {
+      const auto v = transformOperator(vertex);
+      grid_map::Index id;
+      gridMap.getIndex(grid_map::Position(v.x_, v.y_), id);
+      traversability = data(id.x(), id.y());
+    } catch (const std::out_of_range& e) {
+      return false;  // TODO return not traversable for out of bounds case
+    }
+
+    // ignore nans since they might come from faulty
+    // perception pipeline
+    if (std::isnan(traversability)) {
+      continue;
+    }
+
+    if (traversability < traversabilityThreshold) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void divideAndAdd(std::vector<Vertex>* vertices, int depth, const Vertex& pLeft, const Vertex& pRight) {
@@ -163,10 +218,14 @@ void addExtraPointsForEarlyStopping(const RobotFootprint& footprint, std::vector
 
 std::unique_ptr<GridMapLazyStateValidator> createGridMapLazyStateValidator(const grid_map::GridMap& gridMap,
                                                                            const RobotFootprint& footprint,
-                                                                           const std::string& obstacleLayer) {
+                                                                           const std::string& obstacleLayer,
+                                                                           const StateValidityCheckingMethod& stateValidityCheckingMethod,
+                                                                           const double stateValidityThreshold) {
   std::unique_ptr<GridMapLazyStateValidator> validator = std::make_unique<GridMapLazyStateValidator>();
   validator->setGridMap(gridMap);
   validator->setObstacleLayerName(obstacleLayer);
+  validator->setStateValidityCheckingMethod(stateValidityCheckingMethod);
+  validator->setStateValidityThreshold(stateValidityThreshold);
   validator->setFootprint(footprint);
   validator->initialize();
   return std::move(validator);

@@ -63,7 +63,8 @@ int main(int argc, char** argv) {
       se2_planning::computeFootprint(
           stateValidatorRosParameters.robotFootPrintLengthForward_, stateValidatorRosParameters.robotFootPrintLengthBackward_,
           stateValidatorRosParameters.robotFootPrintWidthLeft_, stateValidatorRosParameters.robotFootPrintWidthRight_),
-      stateValidatorRosParameters.gridMapObstacleLayerName_));
+      stateValidatorRosParameters.gridMapObstacleLayerName_, stateValidatorRosParameters.gridMapStateValidityCheckingMethod_,
+      stateValidatorRosParameters.gridMapStateValidityThreshold_));
 
   // Setup ROS interface and start node
   se2_planning::OmplReedsSheppPlannerRos plannerRos(nh);

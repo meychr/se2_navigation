@@ -24,7 +24,7 @@ void GridMapLazyStateValidatorRos::initialize() {
 }
 
 void GridMapLazyStateValidatorRos::initializeMap() {
-  // TODO publishing of map not working
+  // TODO publishing of initial map not working, subscriber not ready yet, could check using numOfSubscribers()
   std::string mapFrameId_ = parameters_.gridMapFrame_;
   double mapLengthX = 20.0;
   double mapLengthY = 20.0;
@@ -106,14 +106,15 @@ void GridMapLazyStateValidatorRos::publishMap() const {
   mapPublisher_.publish(msg);
 }
 
-std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(const ros::NodeHandlePtr nh,
-                                                                                 const GridMapLazyStateValidatorRosParameters& params,
-                                                                                 const grid_map::GridMap& gridMap,
-                                                                                 const RobotFootprint& footprint,
-                                                                                 const std::string& obstacleLayer) {
+std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(
+    const ros::NodeHandlePtr nh, const GridMapLazyStateValidatorRosParameters& params, const grid_map::GridMap& gridMap,
+    const RobotFootprint& footprint, const std::string& obstacleLayer, const StateValidityCheckingMethod stateValidityCheckingMethod,
+    const double stateValidityCheckingThreshold) {
   std::unique_ptr<GridMapLazyStateValidatorRos> validator = std::make_unique<GridMapLazyStateValidatorRos>(nh);
   validator->setGridMap(gridMap);
   validator->setObstacleLayerName(obstacleLayer);
+  validator->setStateValidityCheckingMethod(stateValidityCheckingMethod);
+  validator->setStateValidityThreshold(stateValidityCheckingThreshold);
   validator->setFootprint(footprint);
   validator->setParameters(params);
   validator->initialize();
