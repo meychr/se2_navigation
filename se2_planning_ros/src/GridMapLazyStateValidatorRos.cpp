@@ -49,8 +49,12 @@ void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {
 
     if (newMap.exists(obstacleLayerName_)) {
       // Convert resolution
+      map_.setFrameId(newMap.getFrameId());
+      map_.setTimestamp(newMap.getTimestamp());
       map_.setGeometry(newMap.getLength(), parameters_.gridMapResolution_, newMap.getPosition());
-      map_.addDataFrom(newMap, true, true, true);
+      if (!map_.addDataFrom(newMap, true, true, true)) {
+        ROS_ERROR("GlobalMap: Update of map failed.");
+      }
       setGridMap(map_);
       publishMap();
       newMapAvailable_ = true;
