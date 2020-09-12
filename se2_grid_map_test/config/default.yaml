@@ -1,6 +1,7 @@
 map:
   frame_id:     map
-  layer_name:   traversability
+  elevation_layer_name:         elevation
+  traversability_layer_name:    traversability
   resolution:   0.1
   position:
     x:          5.0

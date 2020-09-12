@@ -16,7 +16,8 @@ void GridMapTest::initRos(){
 
 bool GridMapTest::loadParameters(){
   if (!nh_->getParam("map/frame_id", mapFrameId_)) return false;
-  if (!nh_->getParam("map/layer_name", layerName_)) return false;
+  if (!nh_->getParam("map/elevation_layer_name", elevationLayerName_)) return false;
+  if (!nh_->getParam("map/traversability_layer_name", traversabilityLayerName_)) return false;
   if (!nh_->getParam("map/resolution", mapResolution_)) return false;
   if (!nh_->getParam("map/position/x", mapPositionX_)) return false;
   if (!nh_->getParam("map/position/y", mapPositionY_)) return false;
@@ -51,7 +52,8 @@ void GridMapTest::initMap() {
   map_.setTimestamp(ros::Time::now().toNSec());
   map_.setGeometry(grid_map::Length(mapLength_, mapWidth_), mapResolution_,
                    grid_map::Position(mapPositionX_, mapPositionY_));
-  map_.add(layerName_, 0.0);
+  map_.add(elevationLayerName_, 0.0);       // elevation neutral value is 0.0
+  map_.add(traversabilityLayerName_, 1.0);  // traversability neutral value is 1.0
 }
 
 void GridMapTest::publishMap() {
@@ -64,7 +66,21 @@ void GridMapTest::obstacleCb(geometry_msgs::Point position) {
   double x = position.x;
   double y = position.y;
 
-  map_[layerName_].setConstant(0.0);
+  // Reset elevation layer
+  map_[elevationLayerName_].setConstant(0.0);
+
+  // Add obstacles to elevation layer
+  for (grid_map::GridMapIterator iterator(map_); !iterator.isPastEnd(); ++iterator) {
+    grid_map::Position position;
+    map_.getPosition(*iterator, position);
+    if (position.x() < (x + obstacleLength_ / 2.0) && position.x() > (x - obstacleLength_ / 2.0)
+        && position.y() < (y + obstacleWidth_ / 2.0) && position.y() > (y - obstacleWidth_ / 2.0)) {
+      map_.at(elevationLayerName_, *iterator) = 1.0;  // obstacles of height 1.0 m
+    }
+  }
+
+  // Reset traversability layer
+  map_[traversabilityLayerName_].setConstant(1.0);
 
   // Add obstacles to traversability layer
   for (grid_map::GridMapIterator iterator(map_); !iterator.isPastEnd(); ++iterator) {
@@ -72,7 +88,7 @@ void GridMapTest::obstacleCb(geometry_msgs::Point position) {
     map_.getPosition(*iterator, position);
     if (position.x() < (x + obstacleLength_ / 2.0) && position.x() > (x - obstacleLength_ / 2.0)
         && position.y() < (y + obstacleWidth_ / 2.0) && position.y() > (y - obstacleWidth_ / 2.0)) {
-      map_.at(layerName_, *iterator) = 1.0;  // obstacles
+      map_.at(traversabilityLayerName_, *iterator) = 0.0;  // obstacles, not traversable
     }
   }
 

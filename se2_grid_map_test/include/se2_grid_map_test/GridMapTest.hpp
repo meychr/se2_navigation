@@ -32,7 +32,8 @@ protected:
 
 private:
   std::string mapFrameId_;
-  std::string layerName_;
+  std::string elevationLayerName_;
+  std::string traversabilityLayerName_;
   double mapResolution_;
   double mapPositionX_;
   double mapPositionY_;
