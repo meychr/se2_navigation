@@ -11,7 +11,7 @@
 
 #include "ompl/base/Planner.h"
 #include "ompl/base/objectives/PathLengthOptimizationObjective.h"
-#include "ompl/base/spaces/ReedsSheppStateSpace.h"
+#include "ompl/base/spaces/DubinsStateSpace.h"
 #include "ompl/geometric/planners/rrt/RRTstar.h"
 
 namespace se2_planning {
@@ -48,7 +48,7 @@ void OmplReedsSheppPlanner::initializeStateSpace() {
 }
 
 void OmplReedsSheppPlanner::createDefaultStateSpace() {
-  stateSpace_.reset(new ompl::base::ReedsSheppStateSpace(parameters_.turningRadius_));
+  stateSpace_.reset(new ompl::base::DubinsStateSpace(parameters_.turningRadius_));
   bounds_ = std::make_unique<ompl::base::RealVectorBounds>(reedsSheppStateSpaceDim_);
   setStateSpaceBoundaries();
 }
@@ -127,7 +127,7 @@ void OmplReedsSheppPlanner::convert(const ompl::geometric::PathGeometric& pathOm
 
   /*
    * find first point that is not of type NOP, see
-   * ompl/base/spaces/ReedsSheppStateSpace.h"
+   * ompl/base/spaces/DubinsStateSpace.h"
    */
   int idStart = 0;
   Direction prevDirection = Direction::FWD;
@@ -199,7 +199,7 @@ void OmplReedsSheppPlanner::convert(const ompl::geometric::PathGeometric& pathOm
 int OmplReedsSheppPlanner::getDistanceSignAt(const ompl::geometric::PathGeometric& path, unsigned int id) const {
   const ompl::base::State* currState = path.getState(id);
   const ompl::base::State* stateNext = path.getState(id + 1);
-  const auto rsPath = stateSpace_->as<ompl::base::ReedsSheppStateSpace>()->reedsShepp(currState, stateNext);
+  const auto rsPath = stateSpace_->as<ompl::base::DubinsStateSpace>()->dubins(currState, stateNext);
   const int numElemInRsPathLength = 5;
   std::vector<double> signedLengths(numElemInRsPathLength), lengths(numElemInRsPathLength);
   signedLengths.assign(rsPath.length_, rsPath.length_ + numElemInRsPathLength);
