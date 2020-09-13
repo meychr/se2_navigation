@@ -40,6 +40,7 @@ bool OmplPlanner::plan() {
     return false;
   }
 
+  simpleSetup_->simplifySolution(0.1);
   const ompl::geometric::PathGeometric solution = simpleSetup_->getSolutionPath();
   *path_ = solution;
   *interpolatedPath_ = solution;
