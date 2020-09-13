@@ -12,6 +12,7 @@
 #include "ompl/base/Planner.h"
 #include "ompl/base/objectives/PathLengthOptimizationObjective.h"
 #include "ompl/base/spaces/DubinsStateSpace.h"
+#include "ompl/base/spaces/ReedsSheppStateSpace.h"
 #include "ompl/geometric/planners/rrt/RRTstar.h"
 
 namespace se2_planning {
@@ -24,6 +25,8 @@ int sgn(T val) {
 void OmplReedsSheppPlanner::setParameters(const OmplReedsSheppPlannerParameters& parameters) {
   parameters_ = parameters;
   setMaxPlanningDuration(parameters.maxPlanningTime_);
+  setSimplifyPathFlag(parameters.simplifyPath_);
+  setSimplifyPathDuration(parameters.maxSimplificationTime_);
 }
 
 OmplReedsSheppPlanner::OmplReedsSheppPlanner() : BASE() {
@@ -36,6 +39,7 @@ bool OmplReedsSheppPlanner::initialize() {
   auto si = simpleSetup_->getSpaceInformation();
   // default is rrtStar
   auto planner = std::make_shared<ompl::geometric::RRTstar>(si);
+  planner->setRange(parameters_.range_);
   simpleSetup_->setPlanner(planner);
   ompl::base::OptimizationObjectivePtr optimizationObjective(std::make_shared<ompl::base::PathLengthOptimizationObjective>(si));
   simpleSetup_->setOptimizationObjective(optimizationObjective);
@@ -48,7 +52,16 @@ void OmplReedsSheppPlanner::initializeStateSpace() {
 }
 
 void OmplReedsSheppPlanner::createDefaultStateSpace() {
-  stateSpace_.reset(new ompl::base::DubinsStateSpace(parameters_.turningRadius_));
+  switch (parameters_.stateSpace_) {
+    case StateSpace::DUBINS:
+      stateSpace_.reset(new ompl::base::DubinsStateSpace(parameters_.turningRadius_));
+      break;
+    case StateSpace::REEDS_SHEPP:
+      stateSpace_.reset(new ompl::base::ReedsSheppStateSpace(parameters_.turningRadius_));
+      break;
+    default:
+      throw std::runtime_error("Unknown state space.");
+  }
   bounds_ = std::make_unique<ompl::base::RealVectorBounds>(reedsSheppStateSpaceDim_);
   setStateSpaceBoundaries();
 }
@@ -128,6 +141,8 @@ void OmplReedsSheppPlanner::convert(const ompl::geometric::PathGeometric& pathOm
   /*
    * find first point that is not of type NOP, see
    * ompl/base/spaces/DubinsStateSpace.h"
+   * or
+   * ompl/base/spaces/ReedsSheppStateSpace.h"
    */
   int idStart = 0;
   Direction prevDirection = Direction::FWD;
@@ -199,10 +214,21 @@ void OmplReedsSheppPlanner::convert(const ompl::geometric::PathGeometric& pathOm
 int OmplReedsSheppPlanner::getDistanceSignAt(const ompl::geometric::PathGeometric& path, unsigned int id) const {
   const ompl::base::State* currState = path.getState(id);
   const ompl::base::State* stateNext = path.getState(id + 1);
-  const auto rsPath = stateSpace_->as<ompl::base::DubinsStateSpace>()->dubins(currState, stateNext);
   const int numElemInRsPathLength = 5;
   std::vector<double> signedLengths(numElemInRsPathLength), lengths(numElemInRsPathLength);
-  signedLengths.assign(rsPath.length_, rsPath.length_ + numElemInRsPathLength);
+  switch (parameters_.stateSpace_) {
+    case StateSpace::DUBINS: {
+      const auto rsPath = stateSpace_->as<ompl::base::DubinsStateSpace>()->dubins(currState, stateNext);
+      signedLengths.assign(rsPath.length_, rsPath.length_ + numElemInRsPathLength);
+      break;
+    }
+    case StateSpace::REEDS_SHEPP: {
+      const auto rsPath = stateSpace_->as<ompl::base::ReedsSheppStateSpace>()->reedsShepp(currState, stateNext);
+      signedLengths.assign(rsPath.length_, rsPath.length_ + numElemInRsPathLength);
+      break;
+    }
+    default: { throw std::runtime_error("Unknown state space."); }
+  }
   std::transform(signedLengths.begin(), signedLengths.end(), lengths.begin(), [](double x) -> double { return std::fabs(x); });
   auto maxElemIt = std::max_element(lengths.begin(), lengths.end());
   const int maxElemId = maxElemIt - lengths.begin();

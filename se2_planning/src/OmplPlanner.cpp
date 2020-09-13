@@ -39,8 +39,9 @@ bool OmplPlanner::plan() {
     std::cout << "OmplPlanner: Solve failed" << std::endl;
     return false;
   }
-
-  simpleSetup_->simplifySolution(0.1);
+  if (simplifyPath_) {
+    simpleSetup_->simplifySolution(maxPathSimplificationDuration_);
+  }
   const ompl::geometric::PathGeometric solution = simpleSetup_->getSolutionPath();
   *path_ = solution;
   *interpolatedPath_ = solution;
@@ -73,6 +74,13 @@ void OmplPlanner::updateStateSpaceBounds(const ompl::base::RealVectorBounds& bou
 
 void OmplPlanner::setMaxPlanningDuration(double T) {
   maxPlanningDuration_ = T;
+}
+
+void OmplPlanner::setSimplifyPathFlag(bool value) {
+  simplifyPath_ = value;
+}
+void OmplPlanner::setSimplifyPathDuration(double duration) {
+  maxPathSimplificationDuration_ = duration;
 }
 
 void OmplPlanner::getOmplPath(ompl::geometric::PathGeometric* omplPath) const {

@@ -12,6 +12,8 @@
 
 namespace se2_planning {
 
+enum StateSpace : int { DUBINS = 0, REEDS_SHEPP = 1 };
+
 struct ReedsSheppState : public SE2state {
   ReedsSheppState() = default;
   ReedsSheppState(double x, double y, double yaw);
@@ -41,6 +43,10 @@ struct OmplReedsSheppPlannerParameters {
   double yUpperBound_ = 1000.0;
   double pathSpatialResolution_ = 0.05;
   double maxPlanningTime_ = 1.0;
+  bool simplifyPath_ = false;
+  double maxSimplificationTime_ = 0.1;
+  double range_ = 10.0;
+  StateSpace stateSpace_ = StateSpace::REEDS_SHEPP;
   std::string omplPlannerName_ = "RRTstar";
 };
 

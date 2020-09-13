@@ -33,6 +33,17 @@ OmplReedsSheppPlannerParameters loadOmplReedsSheppPlannerParameters(const std::s
     auto node = basenode["planner"];
     parameters.pathSpatialResolution_ = node["path_spatial_resolution"].as<double>();
     parameters.maxPlanningTime_ = node["max_planning_time"].as<double>();
+    parameters.simplifyPath_ = node["simplify_path"].as<bool>();
+    parameters.maxSimplificationTime_ = node["max_simplification_time"].as<double>();
+    parameters.range_ = node["range"].as<double>();
+    std::string state_space = node["state_space"].as<std::string>();
+    if (state_space == "dubins") {
+      parameters.stateSpace_ = StateSpace::DUBINS;
+    } else if (state_space == "reeds-shepp") {
+      parameters.stateSpace_ = StateSpace::REEDS_SHEPP;
+    } else {
+      throw std::runtime_error("Invalid value for StateSpace. Valid values are 'dubins' or 'reeds-shepp'");
+    }
     parameters.omplPlannerName_ = node["ompl_planner"].as<std::string>();
   }
 

@@ -26,6 +26,8 @@ class OmplPlanner : public Planner {
   void getPath(Path* path) const final;
 
   void setMaxPlanningDuration(double T);
+  void setSimplifyPathFlag(bool value);
+  void setSimplifyPathDuration(double duration);
   void getOmplPath(ompl::geometric::PathGeometric* omplPath) const;
   void getOmplInterpolatedPath(ompl::geometric::PathGeometric* omplPath, double spatialResolution) const;
   void getInterpolatedPath(Path* interpolatedPath, double spatialResolution) const;
@@ -48,6 +50,8 @@ class OmplPlanner : public Planner {
 
  private:
   double maxPlanningDuration_ = 1.0;
+  bool simplifyPath_ = false;
+  double maxPathSimplificationDuration_ = 0.0;
 };
 
 ompl::geometric::PathGeometric interpolatePath(const ompl::geometric::PathGeometric& inputPath, double desiredResolution);
