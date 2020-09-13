@@ -11,6 +11,7 @@ GridMapTest::GridMapTest(ros::NodeHandlePtr nh) : nh_(nh) {}
 void GridMapTest::initRos(){
   mapPub_ = nh_->advertise<grid_map_msgs::GridMap>("grid_map", 1, true);
   obstacleSub_ = nh_->subscribe("obstacle", 1, &GridMapTest::obstacleCb, this);
+  nanSub_ = nh_->subscribe("nan", 1, &GridMapTest::nanCb, this);
   positionSub_ = nh_->subscribe("position", 1, &GridMapTest::positionCb, this);
 }
 
@@ -89,6 +90,39 @@ void GridMapTest::obstacleCb(geometry_msgs::Point position) {
     if (position.x() < (x + obstacleLength_ / 2.0) && position.x() > (x - obstacleLength_ / 2.0)
         && position.y() < (y + obstacleWidth_ / 2.0) && position.y() > (y - obstacleWidth_ / 2.0)) {
       map_.at(traversabilityLayerName_, *iterator) = 0.0;  // obstacles, not traversable
+    }
+  }
+
+  publishMap();
+}
+
+void GridMapTest::nanCb(geometry_msgs::Point position) {
+  double x = position.x;
+  double y = position.y;
+
+  // Reset elevation layer
+  map_[elevationLayerName_].setConstant(0.0);
+
+  // Add nans to elevation layer
+  for (grid_map::GridMapIterator iterator(map_); !iterator.isPastEnd(); ++iterator) {
+    grid_map::Position position;
+    map_.getPosition(*iterator, position);
+    if (position.x() < (x + obstacleLength_ / 2.0) && position.x() > (x - obstacleLength_ / 2.0)
+        && position.y() < (y + obstacleWidth_ / 2.0) && position.y() > (y - obstacleWidth_ / 2.0)) {
+      map_.at(elevationLayerName_, *iterator) = std::nanf("");  // unknow cells
+    }
+  }
+
+  // Reset traversability layer
+  map_[traversabilityLayerName_].setConstant(1.0);
+
+  // Add nans to traversability layer
+  for (grid_map::GridMapIterator iterator(map_); !iterator.isPastEnd(); ++iterator) {
+    grid_map::Position position;
+    map_.getPosition(*iterator, position);
+    if (position.x() < (x + obstacleLength_ / 2.0) && position.x() > (x - obstacleLength_ / 2.0)
+        && position.y() < (y + obstacleWidth_ / 2.0) && position.y() > (y - obstacleWidth_ / 2.0)) {
+      map_.at(traversabilityLayerName_, *iterator) = std::nanf("");  // unknow cells
     }
   }
 

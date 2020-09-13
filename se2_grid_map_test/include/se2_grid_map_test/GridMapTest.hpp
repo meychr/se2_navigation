@@ -22,10 +22,12 @@ public:
 
 protected:
   void obstacleCb(geometry_msgs::Point position);
+  void nanCb(geometry_msgs::Point position);
   void positionCb(geometry_msgs::Point position);
 
   ros::NodeHandlePtr nh_;
   ros::Subscriber obstacleSub_;
+  ros::Subscriber nanSub_;
   ros::Subscriber positionSub_;
   ros::Publisher mapPub_;
   grid_map::GridMap map_;
