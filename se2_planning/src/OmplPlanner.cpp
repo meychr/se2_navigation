@@ -35,8 +35,16 @@ void OmplPlanner::getPath(Path* path) const {
 bool OmplPlanner::plan() {
   simpleSetup_->clear();
   simpleSetup_->setStartAndGoalStates(*startState_, *goalState_);
+  // TODO see https://ompl.kavrakilab.org/genericPlanning.html for continue planning
+  //   The ompl::base::Planner::solve() method can be called repeatedly with different
+  //   allowed time durations until a solution is found. The planning process continues
+  //   with the available data structures when sequential calls to ompl::base::Planner::solve() are made.
   if (!simpleSetup_->solve(maxPlanningDuration_)) {
     std::cout << "OmplPlanner: Solve failed" << std::endl;
+    return false;
+  }
+  if (!simpleSetup_->haveExactSolutionPath()) {
+    std::cout << "OmplPlanner: No solution found" << std::endl;
     return false;
   }
   if (simplifyPath_) {
