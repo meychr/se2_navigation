@@ -214,6 +214,16 @@ void PlanningPanel::createLayout()
   service_orientation_estimation_layout->setContentsMargins(0, 0, 0, 0);
   orientationEstimationGroupBox->setLayout(service_orientation_estimation_layout);
 
+  // Elevation mapping cupy services.
+  QGroupBox *elevationMappingCupyGroupBox = new QGroupBox(tr("Elevation Mapping Cupy"));
+  QHBoxLayout* elevation_mapping_cupy_layout = new QHBoxLayout;
+  elevation_mapping_cupy_init_button_ = new QPushButton("Init from foot positions");
+  elevation_mapping_cupy_reset_button_ = new QPushButton("Reset");
+  elevation_mapping_cupy_layout->addWidget(elevation_mapping_cupy_init_button_, 1, Qt::AlignTop);
+  elevation_mapping_cupy_layout->addWidget(elevation_mapping_cupy_reset_button_, 1, Qt::AlignTop);
+  elevation_mapping_cupy_layout->setContentsMargins(0, 0, 0, 0);
+  elevationMappingCupyGroupBox->setLayout(elevation_mapping_cupy_layout);
+
   // First the names, then the start/goal, then service buttons.
   QVBoxLayout* layout = new QVBoxLayout;
   layout->addWidget(formGroupBox);
@@ -222,6 +232,7 @@ void PlanningPanel::createLayout()
   layout->addWidget(localNavigationGroupBox);
   layout->addWidget(spacebokGroupBox);
   layout->addWidget(orientationEstimationGroupBox);
+  layout->addWidget(elevationMappingCupyGroupBox);
   setLayout(layout);
 
   //set the default parameters
@@ -251,6 +262,8 @@ void PlanningPanel::createLayout()
   connect(spacebok_start_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStartCommand()));
   connect(spacebok_stop_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStopCommand()));
   connect(orientation_estimation_reset_button_, SIGNAL(released()), this, SLOT(callResetOrientationEstimation()));
+  connect(elevation_mapping_cupy_init_button_, SIGNAL(released()), this, SLOT(callInitElevationMappingCupy()));
+  connect(elevation_mapping_cupy_reset_button_, SIGNAL(released()), this, SLOT(callResetElevationMappingCupy()));
 }
 
 void PlanningPanel::updateControllerCommandTopic()
@@ -576,10 +589,25 @@ void PlanningPanel::callResetOrientationEstimation() const
   callService(req, res, "/gps_orientation_estimation/reset");
 }
 
+void PlanningPanel::callInitElevationMappingCupy() const
+{
+  std_srvs::Empty::Request req;
+  std_srvs::Empty::Response res;
+  callService(req, res, "/elevation_mapping/clear_map_with_initializer");
+}
+
+void PlanningPanel::callResetElevationMappingCupy() const
+{
+  std_srvs::Empty::Request req;
+  std_srvs::Empty::Response res;
+  callService(req, res, "/elevation_mapping/clear_map");
+}
+
 void PlanningPanel::getStartPoseFromWidget(geometry_msgs::Pose *startPoint)
 {
 start_pose_widget_->getPose(startPoint);
 }
+
 void PlanningPanel::getStartPoseFromService(geometry_msgs::Pose *startPoint)
 {
 
@@ -589,7 +617,6 @@ se2_navigation_msgs::RequestCurrentStateSrv::Response res;
 std::string service_name = currentStateServiceName_.toStdString();
 callService(req, res, service_name);
 *startPoint = res.pose;
-
 }
 
 void PlanningPanel::callPublishTrackingCommand()
