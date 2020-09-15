@@ -124,7 +124,8 @@ bool isInCollision(const SE2state& state, const std::vector<Vertex>& footprint, 
       // TODO handle out of bounds case???
       occupancy = data(id.x(), id.y());
     } catch (const std::out_of_range& e) {
-      return true;
+      continue;
+      // return true;
     }
 
     // ignore nans since they might come from faulty
@@ -159,7 +160,7 @@ bool isTraversable(const SE2state& state, const std::vector<Vertex>& footprint, 
       gridMap.getIndex(grid_map::Position(v.x_, v.y_), id);
       traversability = data(id.x(), id.y());
     } catch (const std::out_of_range& e) {
-      return false;  // TODO return not traversable for out of bounds case
+      continue;  // TODO return not traversable for out of bounds case
     }
 
     // ignore nans since they might come from faulty
