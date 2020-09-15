@@ -46,6 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 #include <QVBoxLayout>
 #include <QGroupBox>
 #include <QFormLayout>
+#include <QScrollArea>
 
 #include <geometry_msgs/Twist.h>
 #include <rviz/visualization_manager.h>
@@ -233,7 +234,18 @@ void PlanningPanel::createLayout()
   layout->addWidget(spacebokGroupBox);
   layout->addWidget(orientationEstimationGroupBox);
   layout->addWidget(elevationMappingCupyGroupBox);
-  setLayout(layout);
+
+  QWidget* scrollAreaContent = new QWidget;
+  scrollAreaContent->setLayout( layout );
+  QScrollArea* scrollArea = new QScrollArea;
+  scrollArea->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+  scrollArea->setVerticalScrollBarPolicy( Qt::ScrollBarAsNeeded );
+  scrollArea->setWidgetResizable( true );
+  scrollArea->setWidget( scrollAreaContent );
+
+  QVBoxLayout *mainLayout = new QVBoxLayout;
+  mainLayout->addWidget (scrollArea);
+  setLayout (mainLayout);
 
   //set the default parameters
   currentStateAsStartCheckBox_->setChecked(false);
