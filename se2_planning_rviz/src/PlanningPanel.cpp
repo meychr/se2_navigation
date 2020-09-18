@@ -200,10 +200,14 @@ void PlanningPanel::createLayout()
   spacebok_init_button_ = new QPushButton("Init");
   spacebok_start_button_ = new QPushButton("Walk");
   spacebok_stop_button_ = new QPushButton("Stop");
+  spacebok_start_walk_init_button_ = new QPushButton("Walk Init");
+  spacebok_stop_walk_init_button_ = new QPushButton("Stop Init");
   service_spacebok_layout->addWidget(spacebok_standup_button_);
   service_spacebok_layout->addWidget(spacebok_init_button_);
   service_spacebok_layout->addWidget(spacebok_start_button_);
   service_spacebok_layout->addWidget(spacebok_stop_button_);
+  service_spacebok_layout->addWidget(spacebok_start_walk_init_button_);
+  service_spacebok_layout->addWidget(spacebok_stop_walk_init_button_);
   service_spacebok_layout->setContentsMargins(0, 0, 0, 0);
   spacebokGroupBox->setLayout(service_spacebok_layout);
 
@@ -270,9 +274,11 @@ void PlanningPanel::createLayout()
   connect(tracking_command_button_, SIGNAL(released()), this, SLOT(callPublishTrackingCommand()));
   connect(stop_command_button_, SIGNAL(released()), this, SLOT(callPublishStopTrackingCommand()));
   connect(spacebok_standup_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStandUpCommand()));
-  connect(spacebok_init_button_, SIGNAL(released()), this, SLOT(executeSpacebokInitMotion()));
+  connect(spacebok_init_button_, SIGNAL(released()), this, SLOT(executeSpacebokStandbyInitMotion()));
   connect(spacebok_start_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStartCommand()));
   connect(spacebok_stop_button_, SIGNAL(released()), this, SLOT(callPublishSpacebokStopCommand()));
+  connect(spacebok_start_walk_init_button_, SIGNAL(released()), this, SLOT(startSpacebokWalkingInitMotion()));
+  connect(spacebok_stop_walk_init_button_, SIGNAL(released()), this, SLOT(stopSpacebokWalkingInitMotion()));
   connect(orientation_estimation_reset_button_, SIGNAL(released()), this, SLOT(callResetOrientationEstimation()));
   connect(elevation_mapping_cupy_init_button_, SIGNAL(released()), this, SLOT(callInitElevationMappingCupy()));
   connect(elevation_mapping_cupy_reset_button_, SIGNAL(released()), this, SLOT(callResetElevationMappingCupy()));
@@ -552,11 +558,10 @@ t.detach();
 
 }
 
-void PlanningPanel::executeSpacebokInitMotion() const
+void PlanningPanel::executeSpacebokStandbyInitMotion() const
 {
 
   std::thread t([this] {
-
     double maxPositionOffset = 0.1;
     spacebok_msgs::SpacebokHighlevelCommands controlCommand;
     controlCommand.header.frame_id = "";
@@ -572,7 +577,7 @@ void PlanningPanel::executeSpacebokInitMotion() const
     controlCommand.quaternion.z = 0;
 
     //! Move back and forth in standby
-    ros::Rate rate(1.0);
+    ros::Rate rate(0.5);
     int counter = 0;
     while(ros::ok() && counter < 4) {
       controlCommand.header.seq = counter;
@@ -589,6 +594,67 @@ void PlanningPanel::executeSpacebokInitMotion() const
     controlCommand.header.stamp = ros::Time::now();
     controlCommand.position_offset[0] = 0.0;
     spacebokControlCommandPublisher_.publish(controlCommand);
+  });
+
+  t.detach();
+}
+
+void PlanningPanel::startSpacebokWalkingInitMotion() const
+{
+
+  std::thread t([this] {
+    callPublishSpacebokStartCommand();
+
+    ros::Duration(0.5).sleep();
+
+    double desiredVelocity = 0.1;  // [m/s]
+    spacebok_msgs::SpacebokHighlevelCommands controlCommand;
+    controlCommand.header.frame_id = "";
+    //! Default values
+    controlCommand.height = 0.1;
+    controlCommand.velocity = desiredVelocity;
+    controlCommand.turning_rate = 0;
+    //! Set standby pose
+    controlCommand.position_offset = {0, 0};
+    controlCommand.quaternion.w = 1;
+    controlCommand.quaternion.x = 0;
+    controlCommand.quaternion.y = 0;
+    controlCommand.quaternion.z = 0;
+
+    //! Start walking
+    controlCommand.header.stamp = ros::Time::now();
+    spacebokControlCommandPublisher_.publish(controlCommand);
+  });
+
+  t.detach();
+}
+
+void PlanningPanel::stopSpacebokWalkingInitMotion() const
+{
+
+  std::thread t([this] {
+
+    double desiredVelocity = 0.0;  // [m/s]
+    spacebok_msgs::SpacebokHighlevelCommands controlCommand;
+    controlCommand.header.frame_id = "";
+    //! Default values
+    controlCommand.height = 0.1;
+    controlCommand.velocity = desiredVelocity;
+    controlCommand.turning_rate = 0;
+    //! Set standby pose
+    controlCommand.position_offset = {0, 0};
+    controlCommand.quaternion.w = 1;
+    controlCommand.quaternion.x = 0;
+    controlCommand.quaternion.y = 0;
+    controlCommand.quaternion.z = 0;
+
+    //! Start walking
+    controlCommand.header.stamp = ros::Time::now();
+    spacebokControlCommandPublisher_.publish(controlCommand);
+
+    ros::Duration(0.5).sleep();
+
+    callPublishSpacebokStopCommand();
   });
 
   t.detach();

@@ -118,7 +118,9 @@ class PlanningPanel : public rviz::Panel {
   void callPublishSpacebokStandUpCommand() const;
   void callPublishSpacebokStartCommand() const;
   void callPublishSpacebokStopCommand() const;
-  void executeSpacebokInitMotion() const;
+  void executeSpacebokStandbyInitMotion() const;
+  void startSpacebokWalkingInitMotion() const;
+  void stopSpacebokWalkingInitMotion() const;
   void callResetOrientationEstimation() const;
   void callInitElevationMappingCupy() const;
   void callResetElevationMappingCupy() const;
@@ -164,6 +166,8 @@ protected:
   QPushButton* spacebok_init_button_;
   QPushButton* spacebok_start_button_;
   QPushButton* spacebok_stop_button_;
+  QPushButton* spacebok_start_walk_init_button_;
+  QPushButton* spacebok_stop_walk_init_button_;
   QPushButton* orientation_estimation_reset_button_;
   QPushButton* elevation_mapping_cupy_init_button_;
   QPushButton* elevation_mapping_cupy_reset_button_;
