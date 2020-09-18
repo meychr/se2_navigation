@@ -43,10 +43,10 @@ bool OmplPlanner::plan() {
     std::cout << "OmplPlanner: Solve failed" << std::endl;
     return false;
   }
-  if (!simpleSetup_->haveExactSolutionPath()) {
-    std::cout << "OmplPlanner: No solution found" << std::endl;
-    return false;
-  }
+  //  if (!simpleSetup_->haveExactSolutionPath()) {
+  //    std::cout << "OmplPlanner: No solution found" << std::endl;
+  //    return false;
+  //  }
   if (simplifyPath_) {
     simpleSetup_->simplifySolution(maxPathSimplificationDuration_);
   }
