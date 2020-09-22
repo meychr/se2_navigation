@@ -13,9 +13,7 @@
 
 namespace se2_planning {
 
-OmplReedsSheppPlannerRos::OmplReedsSheppPlannerRos(ros::NodeHandlePtr nh) : BASE(nh) {
-  initRos();
-}
+OmplReedsSheppPlannerRos::OmplReedsSheppPlannerRos(ros::NodeHandlePtr nh) : BASE(nh) {}
 
 void OmplReedsSheppPlannerRos::setParameters(const OmplReedsSheppPlannerRosParameters& parameters) {
   parameters_ = parameters;
@@ -23,6 +21,7 @@ void OmplReedsSheppPlannerRos::setParameters(const OmplReedsSheppPlannerRosParam
 
 bool OmplReedsSheppPlannerRos::initialize() {
   bool result = BASE::initialize();
+  initRos();
   return result;
 }
 bool OmplReedsSheppPlannerRos::plan() {

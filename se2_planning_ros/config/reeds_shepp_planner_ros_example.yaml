@@ -28,7 +28,7 @@ state_validator_ros:
 planner_ros:
   nav_msgs_path_topic: ompl_rs_planner_ros/nav_msgs_path
   planning_service_name: ompl_rs_planner_ros/planning_service
-  path_msg_topic: ompl_rs_planner_ros/nav_msgs_path
+  path_msg_topic: ompl_rs_planner_ros/path_msgs_path
   path_frame: map
   nav_msg_path_spatial_resolution: 1.5
 
