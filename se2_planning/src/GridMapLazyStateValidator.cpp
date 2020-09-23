@@ -39,14 +39,14 @@ int GridMapLazyStateValidator::getSeed() const {
 void GridMapLazyStateValidator::setStateValidityCheckingMethod(StateValidityCheckingMethod value) {
   stateValidityCheckingMethod_ = value;
 }
-bool GridMapLazyStateValidator::getStateValidityCheckingMethod() const {
+StateValidityCheckingMethod GridMapLazyStateValidator::getStateValidityCheckingMethod() const {
   return stateValidityCheckingMethod_;
 }
 
 void GridMapLazyStateValidator::setStateValidityThreshold(double value) {
   stateValidityThreshold_ = value;
 }
-bool GridMapLazyStateValidator::getStateValidityThreshold() const {
+double GridMapLazyStateValidator::getStateValidityThreshold() const {
   return stateValidityThreshold_;
 }
 

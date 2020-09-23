@@ -38,10 +38,10 @@ class GridMapLazyStateValidator : public GridMapStateValidator {
   int getSeed() const;
 
   void setStateValidityCheckingMethod(StateValidityCheckingMethod value);
-  bool getStateValidityCheckingMethod() const;
+  StateValidityCheckingMethod getStateValidityCheckingMethod() const;
 
   void setStateValidityThreshold(double value);
-  bool getStateValidityThreshold() const;
+  double getStateValidityThreshold() const;
 
  private:
   std::vector<Vertex> nominalFootprintPoints_;
