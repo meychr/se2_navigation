@@ -27,6 +27,8 @@ void OmplReedsSheppPlanner::setParameters(const OmplReedsSheppPlannerParameters&
   setMaxPlanningDuration(parameters.maxPlanningTime_);
   setSimplifyPathFlag(parameters.simplifyPath_);
   setSimplifyPathDuration(parameters.maxSimplificationTime_);
+  setExactSolutionOnlyFlag(parameters.exactSolutionOnly_);
+  setDebugOutputFlag(parameters.debugOutput_);
 }
 
 OmplReedsSheppPlanner::OmplReedsSheppPlanner() : BASE() {
@@ -40,6 +42,7 @@ bool OmplReedsSheppPlanner::initialize() {
   // default is rrtStar
   auto planner = std::make_shared<ompl::geometric::RRTstar>(si);
   planner->setRange(parameters_.range_);
+  planner->setGoalBias(parameters_.goalBias_);
   simpleSetup_->setPlanner(planner);
   ompl::base::OptimizationObjectivePtr optimizationObjective(std::make_shared<ompl::base::PathLengthOptimizationObjective>(si));
   simpleSetup_->setOptimizationObjective(optimizationObjective);

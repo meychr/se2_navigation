@@ -43,10 +43,6 @@ bool OmplPlanner::plan() {
     std::cout << "OmplPlanner: Solve failed" << std::endl;
     return false;
   }
-  //  if (!simpleSetup_->haveExactSolutionPath()) {
-  //    std::cout << "OmplPlanner: No solution found" << std::endl;
-  //    return false;
-  //  }
   if (simplifyPath_) {
     simpleSetup_->simplifySolution(maxPathSimplificationDuration_);
   }
@@ -55,8 +51,21 @@ bool OmplPlanner::plan() {
   *interpolatedPath_ = solution;
   // std::cout << "Solution plan has: " << solution.getStateCount() << " states." << std::endl;
 
+  // Debug output (has to be called after simpleSetup_->solve() because this calls setup() which is required for print()
+  //  simpleSetup_->setup(); // automatically called by solve(), only useful for simpleSet
+  if (debugOutput_) {
+    simpleSetup_->print();
+  }
+  if (exactSolutionOnly_) {
+    if (!simpleSetup_->haveExactSolutionPath()) {
+      std::cout << "OmplPlanner: No exact solution found" << std::endl;
+      return false;
+    }
+  }
+
   return true;
 }
+
 bool OmplPlanner::reset() {
   simpleSetup_->clear();
   return true;
@@ -89,6 +98,14 @@ void OmplPlanner::setSimplifyPathFlag(bool value) {
 }
 void OmplPlanner::setSimplifyPathDuration(double duration) {
   maxPathSimplificationDuration_ = duration;
+}
+
+void OmplPlanner::setExactSolutionOnlyFlag(bool value) {
+  exactSolutionOnly_ = value;
+}
+
+void OmplPlanner::setDebugOutputFlag(bool value) {
+  debugOutput_ = value;
 }
 
 void OmplPlanner::getOmplPath(ompl::geometric::PathGeometric* omplPath) const {

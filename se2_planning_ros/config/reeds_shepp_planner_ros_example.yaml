@@ -34,13 +34,16 @@ planner_ros:
   state_space_bounds_margin: 0.5
 
 planner:
-  state_space: reeds-shepp # see OMPLReedsSheppPlanner.hpp for list of available state spaces
+  state_space: reeds-shepp            # see OMPLReedsSheppPlanner.hpp for list of available state spaces
   path_spatial_resolution: 0.05
-  ompl_planner: RRTstar # see ompl_planner_creators.hpp for list of available planners, not implemented yet
-  range: 15.0 # max. distance per iterations (do not make too small, otherwise goal far away is not reached in max_planning_time)
+  ompl_planner: RRTstar               # see ompl_planner_creators.hpp for list of available planners, not implemented yet
+  range: 15.0                         # max. distance per iterations (do not make too small, otherwise goal far away is not reached in max_planning_time)
+  goal_bias: 0.2                      # percentage of attempts to connect directly to goal state (can be rather high because we expect rather straight connection to goal)
   max_planning_time: 1.0
   simplify_path: True
-  max_simplification_time: 0.1 # usually way smaller
+  max_simplification_time: 0.1        # actual required time usually way smaller
+  exact_solution_only: False
+  debug_output: False
   
 ompl_planners:
   rrt_star:

@@ -46,6 +46,9 @@ struct OmplReedsSheppPlannerParameters {
   bool simplifyPath_ = false;
   double maxSimplificationTime_ = 0.1;
   double range_ = 10.0;
+  double goalBias_ = 0.2;
+  bool exactSolutionOnly_ = false;
+  bool debugOutput_ = false;
   StateSpace stateSpace_ = StateSpace::REEDS_SHEPP;
   std::string omplPlannerName_ = "RRTstar";
 };

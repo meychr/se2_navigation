@@ -36,6 +36,9 @@ OmplReedsSheppPlannerParameters loadOmplReedsSheppPlannerParameters(const std::s
     parameters.simplifyPath_ = node["simplify_path"].as<bool>();
     parameters.maxSimplificationTime_ = node["max_simplification_time"].as<double>();
     parameters.range_ = node["range"].as<double>();
+    parameters.goalBias_ = node["goal_bias"].as<double>();
+    parameters.exactSolutionOnly_ = node["exact_solution_only"].as<bool>();
+    parameters.debugOutput_ = node["debug_output"].as<bool>();
     std::string state_space = node["state_space"].as<std::string>();
     if (state_space == "dubins") {
       parameters.stateSpace_ = StateSpace::DUBINS;
