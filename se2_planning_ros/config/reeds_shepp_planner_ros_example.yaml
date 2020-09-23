@@ -7,7 +7,7 @@ state_space:
   turning_radius: 10.0
 
 state_validator_ros:
-  grid_map_frame:                   map
+  grid_map_frame:                   odom
   grid_map_msg_topic:               /se2_grid_map_test/grid_map
   grid_map_obstacle_layer_name:     obstacle
   grid_map_state_validity_checking_method: collision
@@ -29,7 +29,7 @@ planner_ros:
   nav_msgs_path_topic: ompl_rs_planner_ros/nav_msgs_path
   planning_service_name: ompl_rs_planner_ros/planning_service
   path_msg_topic: ompl_rs_planner_ros/path_msgs_path
-  path_frame: map
+  path_frame: odom
   nav_msg_path_spatial_resolution: 1.5
   state_space_bounds_margin: 0.5
 
