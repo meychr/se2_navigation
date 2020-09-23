@@ -27,6 +27,7 @@ path_tracking:
   
 progress_validation:
   goal_distance_tolerance: 0.05
+  goal_distance_for_planning: 1.0
 
 path_preprocessing:
   minimal_segment_length: 1.0

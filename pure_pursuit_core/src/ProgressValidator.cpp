@@ -17,6 +17,22 @@ bool ProgressValidator::isPathSegmentTrackingFinished(const PathSegment& pathSeg
   const bool isCloseEnough = (currPosition - goalPosition).norm() < parameters_.goalDistanceTolerance_;
   return isCloseEnough || isPastLastPoint(pathSegment, currPosition);
 }
+
+bool ProgressValidator::isPathSegmentAboutToFinish(const PathSegment& pathSegment, const RobotState& currentState) const {
+  const Point currPosition = currentState.pose_.position_;
+  const Point goalPosition = pathSegment.point_.back().position_;
+  const bool isCloseEnough = (currPosition - goalPosition).norm() < parameters_.goalDistanceForPlanning_;
+  return isCloseEnough;
+}
+
+bool ProgressValidator::isPathTrackingAboutToFinish(const Path& path, const RobotState& currentState, unsigned int currentSegment) const {
+  const bool isTrackingLastSegment = path.segment_.size() - 1 == currentSegment;
+  const Point currPosition = currentState.pose_.position_;
+  const Point goalPosition = path.segment_.at(currentSegment).point_.back().position_;
+  const bool isCloseEnough = (currPosition - goalPosition).norm() < parameters_.goalDistanceForPlanning_;
+  return isTrackingLastSegment && isCloseEnough;
+}
+
 bool ProgressValidator::isPathTrackingFinished(const Path& path, const RobotState& currentState, unsigned int currentSegment) const {
   const bool isTrackingLastSegment = path.segment_.size() - 1 == currentSegment;
   return isTrackingLastSegment && isPathSegmentTrackingFinished(path.segment_.at(currentSegment), currentState);

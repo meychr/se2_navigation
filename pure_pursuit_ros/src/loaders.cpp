@@ -121,6 +121,7 @@ ProgressValidatorParameters loadProgressValidatorParameters(const std::string& f
   auto node = basenode["progress_validation"];
   ProgressValidatorParameters parameters;
   parameters.goalDistanceTolerance_ = node["goal_distance_tolerance"].as<double>();
+  parameters.goalDistanceForPlanning_ = node["goal_distance_for_planning"].as<double>();
 
   return parameters;
 }

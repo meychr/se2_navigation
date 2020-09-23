@@ -17,6 +17,7 @@ class Path;
 
 struct ProgressValidatorParameters {
   double goalDistanceTolerance_ = 0.05;
+  double goalDistanceForPlanning_ = 1.0;
 };
 
 class ProgressValidator {
@@ -25,7 +26,9 @@ class ProgressValidator {
   virtual ~ProgressValidator() = default;
 
   virtual bool isPathSegmentTrackingFinished(const PathSegment& pathSegment, const RobotState& currentState) const;
-  virtual bool isPathTrackingFinished(const Path& path, const RobotState& currentState, unsigned int currentSegmenet) const;
+  virtual bool isPathSegmentAboutToFinish(const PathSegment& pathSegment, const RobotState& currentState) const;
+  virtual bool isPathTrackingAboutToFinish(const Path& path, const RobotState& currentState, unsigned int currentSegment) const;
+  virtual bool isPathTrackingFinished(const Path& path, const RobotState& currentState, unsigned int currentSegment) const;
 
   void setParameters(const ProgressValidatorParameters& parameters);
 
