@@ -20,21 +20,6 @@ void GridMapLazyStateValidatorRos::setParameters(const GridMapLazyStateValidator
 void GridMapLazyStateValidatorRos::initialize() {
   BASE::initialize();
   initRos();
-  initializeMap();
-}
-
-void GridMapLazyStateValidatorRos::initializeMap() {
-  // TODO publishing of initial map not working, subscriber not ready yet, could check using numOfSubscribers()
-  std::string mapFrameId_ = parameters_.gridMapFrame_;
-  double mapLengthX = 20.0;
-  double mapLengthY = 20.0;
-  map_.setFrameId(mapFrameId_);
-  map_.setTimestamp(ros::Time::now().toNSec());
-  map_.setGeometry(grid_map::Length(mapLengthX, mapLengthY), parameters_.gridMapResolution_,
-                   grid_map::Position(0, 0));  // adjust planner parameters as well!
-  map_.add(obstacleLayerName_, 0.0);
-  setGridMap(map_);
-  publishMap();
 }
 
 void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {

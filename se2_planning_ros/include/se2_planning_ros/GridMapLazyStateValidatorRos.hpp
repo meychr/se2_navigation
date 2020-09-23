@@ -45,7 +45,6 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
   ~GridMapLazyStateValidatorRos() override = default;
 
   void initialize() override;
-  void initializeMap();
   void setParameters(const GridMapLazyStateValidatorRosParameters& parameters);
   void publishMap() const;
 
