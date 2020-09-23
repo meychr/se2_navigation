@@ -44,7 +44,7 @@ void SimplePathTracker::advanceStateMachine() {
   }
 
   if (currentFSMState_ == States::Driving && isSegmentTrackingFinished) {
-    // go to waiting state state
+    // go to waiting state
     currentFSMState_ = States::Waiting;
     stopwatch_.start();
     const int nSegments = currentPath_.segment_.size();
