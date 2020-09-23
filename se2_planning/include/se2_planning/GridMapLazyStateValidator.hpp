@@ -56,8 +56,10 @@ class GridMapLazyStateValidator : public GridMapStateValidator {
 void computeFootprintPoints(const grid_map::GridMap& gridMap, const RobotFootprint& footprint, std::vector<Vertex>* footprintPoints);
 bool isInCollision(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
                    const std::string& obstacleLayer, const double collisionThreshold);
-bool isTraversable(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
-                   const std::string& traversabilityLayer, const double traversabilityThreshold);
+// bool isTraversable(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
+//                   const std::string& traversabilityLayer, const double traversabilityThreshold);
+bool isTraversableIterator(const SE2state& state, const RobotFootprint& footprint, const grid_map::GridMap& gridMap,
+                           const std::string& traversabilityLayer, const double traversabilityThreshold);
 void addExtraPointsForEarlyStopping(const RobotFootprint& footprint, std::vector<Vertex>* points, int seed);
 std::unique_ptr<GridMapLazyStateValidator> createGridMapLazyStateValidator(const grid_map::GridMap& gridMap,
                                                                            const RobotFootprint& footprint,

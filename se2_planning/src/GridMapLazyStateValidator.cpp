@@ -81,7 +81,7 @@ bool GridMapLazyStateValidator::isStateValid(const State& state) const {
     case StateValidityCheckingMethod::COLLISION:
       return !isInCollision(se2state, nominalFootprintPoints_, gridMap_, obstacleLayerName_, stateValidityThreshold_);
     case StateValidityCheckingMethod::TRAVERSABILITY:
-      return isTraversable(se2state, nominalFootprintPoints_, gridMap_, obstacleLayerName_, stateValidityThreshold_);
+      return isTraversableIterator(se2state, nominalFootprint_, gridMap_, obstacleLayerName_, stateValidityThreshold_);
     default:
       throw std::runtime_error("Invalid StateValidityCheckingMethod set.");
   }
@@ -121,11 +121,10 @@ bool isInCollision(const SE2state& state, const std::vector<Vertex>& footprint, 
       const auto v = transformOperator(vertex);
       grid_map::Index id;
       gridMap.getIndex(grid_map::Position(v.x_, v.y_), id);
-      // TODO handle out of bounds case???
       occupancy = data(id.x(), id.y());
     } catch (const std::out_of_range& e) {
-      continue;
-      // return true;
+      continue;  // TODO at the moment return traversable for out of bounds case
+      // return true;  // would assume all points out of bounds to be intraversable
     }
 
     // ignore nans since they might come from faulty
@@ -142,25 +141,62 @@ bool isInCollision(const SE2state& state, const std::vector<Vertex>& footprint, 
   return false;
 }
 
-bool isTraversable(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
-                   const std::string& traversabilityLayer, const double traversabilityThreshold) {
-  const double Cos = std::cos(state.yaw_);
-  const double Sin = std::sin(state.yaw_);
-  const double dx = state.x_;
-  const double dy = state.y_;
-  auto transformOperator = [Cos, Sin, dx, dy](const Vertex& v) -> Vertex {
-    return Vertex{Cos * v.x_ - Sin * v.y_ + dx, Sin * v.x_ + Cos * v.y_ + dy};
-  };
+// TODO Not working with updated state space bounds
+// bool isTraversable(const SE2state& state, const std::vector<Vertex>& footprint, const grid_map::GridMap& gridMap,
+//                   const std::string& traversabilityLayer, const double traversabilityThreshold) {
+//  const double Cos = std::cos(state.yaw_);
+//  const double Sin = std::sin(state.yaw_);
+//  const double dx = state.x_;
+//  const double dy = state.y_;
+//  auto transformOperator = [Cos, Sin, dx, dy](const Vertex& v) -> Vertex {
+//    return Vertex{Cos * v.x_ - Sin * v.y_ + dx, Sin * v.x_ + Cos * v.y_ + dy};
+//  };
+//  const auto& data = gridMap.get(traversabilityLayer);
+//  for (const auto& vertex : footprint) {
+//    double traversability = 1.0;
+//    try {
+//      // Translate and rotate to current state
+//      const auto v = transformOperator(vertex);
+//      grid_map::Index id;
+//      gridMap.getIndex(grid_map::Position(v.x_, v.y_), id);
+//      traversability = data(id.x(), id.y());
+//    } catch (const std::out_of_range& e) {
+//      continue;  // TODO at the moment return traversable for out of bounds case
+//    }
+//
+//    // ignore nans since they might come from faulty
+//    // perception pipeline
+//    if (std::isnan(traversability)) {
+//      continue;
+//    }
+//
+//    if (traversability < traversabilityThreshold) {
+//      return false;
+//    }
+//  }
+//
+//  return true;
+//}
+
+bool isTraversableIterator(const SE2state& state, const RobotFootprint& footprint, const grid_map::GridMap& gridMap,
+                           const std::string& traversabilityLayer, const double traversabilityThreshold) {
+  RobotFootprint currentFootprint;
+  currentFootprint = footprint;  // assign memory/size, otherwise segfault
+  footprintAtPose(footprint, state, &currentFootprint);
+  grid_map::Polygon footprintPolygon;
+  footprintPolygon = toPolygon(currentFootprint);
+  footprintPolygon.setFrameId(gridMap.getFrameId());
+  footprintPolygon.setTimestamp(gridMap.getTimestamp());
+
   const auto& data = gridMap.get(traversabilityLayer);
-  for (const auto& vertex : footprint) {
+  for (grid_map::PolygonIterator iterator(gridMap, footprintPolygon); !iterator.isPastEnd(); ++iterator) {
     double traversability = 1.0;
     try {
-      const auto v = transformOperator(vertex);
-      grid_map::Index id;
-      gridMap.getIndex(grid_map::Position(v.x_, v.y_), id);
-      traversability = data(id.x(), id.y());
+      // Translate and rotate to current state
+      const grid_map::Index idx(*iterator);
+      traversability = data(idx.x(), idx.y());
     } catch (const std::out_of_range& e) {
-      continue;  // TODO return not traversable for out of bounds case
+      continue;  // TODO at the moment return traversable for out of bounds case
     }
 
     // ignore nans since they might come from faulty
