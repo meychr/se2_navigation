@@ -31,6 +31,7 @@ planner_ros:
   path_msg_topic: ompl_rs_planner_ros/path_msgs_path
   path_frame: map
   nav_msg_path_spatial_resolution: 1.5
+  state_space_bounds_margin: 0.5
 
 planner:
   state_space: reeds-shepp # see OMPLReedsSheppPlanner.hpp for list of available state spaces

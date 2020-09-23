@@ -22,6 +22,7 @@ void OmplReedsSheppPlannerRos::setParameters(const OmplReedsSheppPlannerRosParam
 bool OmplReedsSheppPlannerRos::initialize() {
   bool result = BASE::initialize();
   initRos();
+  initializeStateSpaceMarker();
   return result;
 }
 bool OmplReedsSheppPlannerRos::plan() {
@@ -45,6 +46,9 @@ bool OmplReedsSheppPlannerRos::planningService(PlanningService::Request& req, Pl
 
   // Block update of state validator obstacle map during planning
   planner_->as<OmplReedsSheppPlanner>()->lockStateValidator();
+  // TODO move to detach? Better to publish this info for debugging before checking validity of states.
+  publishStartGoalMsgs(start, goal);
+  publishStateSpaceMarker();
   bool result = plan();
   planner_->as<OmplReedsSheppPlanner>()->unlockStateValidator();
 
@@ -57,6 +61,9 @@ void OmplReedsSheppPlannerRos::initRos() {
   pathNavMsgsPublisher_ = nh_->advertise<nav_msgs::Path>(parameters_.pathNavMsgTopic_, 1, true);
   planningService_ = nh_->advertiseService(parameters_.planningSerivceName_, &OmplReedsSheppPlannerRos::planningService, this);
   pathPublisher_ = nh_->advertise<se2_navigation_msgs::PathMsg>(parameters_.pathMsgTopic_, 1);
+  startPublisher_ = nh_->advertise<geometry_msgs::PoseStamped>("start", 1);
+  goalPublisher_ = nh_->advertise<geometry_msgs::PoseStamped>("goal", 1);
+  stateSpacePublisher_ = nh_->advertise<visualization_msgs::Marker>("state_space", 1);
 }
 
 void OmplReedsSheppPlannerRos::publishPathNavMsgs() const {
@@ -79,6 +86,62 @@ void OmplReedsSheppPlannerRos::publishPath() const {
   msg.header_.seq = planSeqNumber_;
   pathPublisher_.publish(se2_navigation_msgs::convert(msg));
   ROS_INFO_STREAM("Publishing ReedsShepp path, num states: " << rsPath.numPoints());
+}
+
+void OmplReedsSheppPlannerRos::publishStartGoalMsgs(const ReedsSheppState& start, const ReedsSheppState& goal) const {
+  geometry_msgs::PoseStamped startPose;
+  startPose.header.frame_id = parameters_.pathFrame_;
+  startPose.header.stamp = ros::Time::now();
+  startPose.pose = se2_planning::convert(start);
+  startPublisher_.publish(startPose);
+  geometry_msgs::PoseStamped goalPose;
+  goalPose.header.frame_id = parameters_.pathFrame_;
+  goalPose.header.stamp = ros::Time::now();
+  goalPose.pose = se2_planning::convert(goal);
+  goalPublisher_.publish(goalPose);
+}
+
+void OmplReedsSheppPlannerRos::initializeStateSpaceMarker() {
+  // TODO expose as params?
+  double lineWidth_ = 0.1;
+  std_msgs::ColorRGBA color_;
+  // No transparency
+  color_.a = 1;
+  // Black
+  color_.r = 0;
+  color_.g = 0;
+  color_.b = 0;
+  // Init marker
+  int nVertices_ = 5;
+  stateSpaceMarker_.ns = "state_space";
+  stateSpaceMarker_.lifetime = ros::Duration();
+  stateSpaceMarker_.action = visualization_msgs::Marker::ADD;
+  stateSpaceMarker_.type = visualization_msgs::Marker::LINE_STRIP;
+  stateSpaceMarker_.scale.x = lineWidth_;
+  stateSpaceMarker_.points.resize(nVertices_);  // Initialized to [0.0, 0.0, 0.0]
+  stateSpaceMarker_.colors.resize(nVertices_, color_);
+}
+
+void OmplReedsSheppPlannerRos::publishStateSpaceMarker() {
+  // Set marker info.
+  stateSpaceMarker_.header.frame_id = parameters_.pathFrame_;
+  stateSpaceMarker_.header.stamp = ros::Time::now();
+
+  // Set positions of markers.
+  const auto bounds = planner_->as<OmplReedsSheppPlanner>()->getStateSpaceBoundaries();
+  stateSpaceMarker_.points[0].x = bounds.low[0];
+  stateSpaceMarker_.points[0].y = bounds.low[1];
+  stateSpaceMarker_.points[1].x = bounds.high[0];
+  stateSpaceMarker_.points[1].y = bounds.low[1];
+  stateSpaceMarker_.points[2].x = bounds.high[0];
+  stateSpaceMarker_.points[2].y = bounds.high[1];
+  stateSpaceMarker_.points[3].x = bounds.low[0];
+  stateSpaceMarker_.points[3].y = bounds.high[1];
+  // Close the rectangle with the fifth point
+  stateSpaceMarker_.points[4].x = stateSpaceMarker_.points[0].x;
+  stateSpaceMarker_.points[4].y = stateSpaceMarker_.points[0].y;
+
+  stateSpacePublisher_.publish(stateSpaceMarker_);
 }
 
 geometry_msgs::Pose convert(const ReedsSheppState& state, double z) {
