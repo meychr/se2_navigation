@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
   plannerRos.initialize();
 
   // Callback to update OMPL planner bounds when map changes
-  ros::Subscriber mapSub = nh->subscribe(stateValidatorRosParameters.gridMapMsgTopic_, 1, gridMapCallback);
+  ros::Subscriber mapSub = nh->subscribe(stateValidatorRosParameters.gridMapMsgSubTopic_, 1, gridMapCallback);
 
   ros::spin();
 

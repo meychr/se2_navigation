@@ -79,10 +79,11 @@ bool GridMapLazyStateValidatorRos::checkPathServer(se2_navigation_msgs::CheckPat
 
 void GridMapLazyStateValidatorRos::initRos() {
   // Visualize map used in state validator in rviz
-  mapPublisher_ = nh_->advertise<grid_map_msgs::GridMap>("map_debug", 1);
+  mapPublisher_ = nh_->advertise<grid_map_msgs::GridMap>(parameters_.gridMapMsgPubTopic_, 1);
   // Input topic for grid map
-  mapSubscriber_ = nh_->subscribe(parameters_.gridMapMsgTopic_, 1, &GridMapLazyStateValidatorRos::mapCb, this);
-  checkPathServer_ = nh_->advertiseService("check_path", &GridMapLazyStateValidatorRos::checkPathServer, this);
+  mapSubscriber_ = nh_->subscribe(parameters_.gridMapMsgSubTopic_, 1, &GridMapLazyStateValidatorRos::mapCb, this);
+  // Check validity of a given path
+  checkPathServer_ = nh_->advertiseService(parameters_.checkPathServiceName_, &GridMapLazyStateValidatorRos::checkPathServer, this);
 }
 
 void GridMapLazyStateValidatorRos::publishMap() const {

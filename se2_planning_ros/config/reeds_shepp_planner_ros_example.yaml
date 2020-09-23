@@ -8,7 +8,8 @@ state_space:
 
 state_validator_ros:
   grid_map_frame:                   odom
-  grid_map_msg_topic:               /se2_grid_map_test/grid_map
+  grid_map_msg_sub_topic:           /se2_grid_map_test/grid_map
+  grid_map_msg_pub_topic:           state_validator/grid_map
   grid_map_obstacle_layer_name:     obstacle
   grid_map_state_validity_checking_method: collision
   grid_map_state_validity_threshold: 0.1

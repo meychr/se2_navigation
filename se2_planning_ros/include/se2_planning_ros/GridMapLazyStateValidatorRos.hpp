@@ -20,7 +20,8 @@ namespace se2_planning {
 
 struct GridMapLazyStateValidatorRosParameters {
   std::string gridMapFrame_ = "map";
-  std::string gridMapMsgTopic_ = "state_validator_ros/traversability_map";
+  std::string gridMapMsgSubTopic_ = "state_validator_ros/traversability_map_in";
+  std::string gridMapMsgPubTopic_ = "state_validator_ros/traversability_map_out";
   std::string gridMapObstacleLayerName_ = "traversability";  // redundant, already defined by GridMapStateValidator
   StateValidityCheckingMethod gridMapStateValidityCheckingMethod_ =
       StateValidityCheckingMethod::TRAVERSABILITY;  // redundant, already defined by GridMapStateValidator
@@ -35,6 +36,7 @@ struct GridMapLazyStateValidatorRosParameters {
   double robotFootPrintLengthBackward_ = 0.75;
   double robotFootPrintWidthLeft_ = 0.5;
   double robotFootPrintWidthRight_ = 0.5;
+  std::string checkPathServiceName_ = "check_path";
 };
 
 class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {

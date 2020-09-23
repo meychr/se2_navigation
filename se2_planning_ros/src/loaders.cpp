@@ -92,7 +92,8 @@ GridMapLazyStateValidatorRosParameters loadGridMapLazyStateValidatorRosParameter
     throw std::runtime_error("Invalid value for StateValidityCheckingMethod. Valid values are 'collision' or 'traversability'");
   }
   parameters.gridMapStateValidityThreshold_ = node["grid_map_state_validity_threshold"].as<double>();
-  parameters.gridMapMsgTopic_ = node["grid_map_msg_topic"].as<std::string>();
+  parameters.gridMapMsgSubTopic_ = node["grid_map_msg_sub_topic"].as<std::string>();
+  parameters.gridMapMsgPubTopic_ = node["grid_map_msg_pub_topic"].as<std::string>();
   parameters.gridMapResolution_ = node["grid_map_resolution"].as<double>();
   parameters.gridMapLength_ = node["grid_map_length"].as<double>();
   parameters.gridMapWidth_ = node["grid_map_width"].as<double>();
@@ -103,6 +104,7 @@ GridMapLazyStateValidatorRosParameters loadGridMapLazyStateValidatorRosParameter
   parameters.robotFootPrintLengthBackward_ = node["robot_footprint_length_backward"].as<double>();
   parameters.robotFootPrintWidthLeft_ = node["robot_footprint_width_left"].as<double>();
   parameters.robotFootPrintWidthRight_ = node["robot_footprint_width_right"].as<double>();
+  parameters.checkPathServiceName_ = node["check_path_service"].as<std::string>();
 
   return parameters;
 }
