@@ -55,26 +55,45 @@ void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {
 
 bool GridMapLazyStateValidatorRos::checkPathServer(se2_navigation_msgs::CheckPathSrv::Request& req,
                                                    se2_navigation_msgs::CheckPathSrv::Response& res) {
-  // TODO check issue with updates of map?
-  // TODO how to handle case where all points are invalid?
-  res.valid = true;
-  res.nextValidPathSegment = 0;
-  res.nextValidPoint = 0;
-  for (int idx_segment = 0; idx_segment < req.path.segment.size(); idx_segment++) {
-    for (int idx_point = 0; idx_point < req.path.segment[idx_segment].points.size(); idx_point++) {
-      if (req.path.segment[idx_segment].points[idx_point].orientation.w == 0) {
-        ROS_ERROR("Invalid quaternion passed to check path server.");
-      }
-      SE2state state;
-      state = convert(req.path.segment[idx_segment].points[idx_point]);
-      if (!isStateValid(state)) {
-        res.valid = false;
-        res.nextValidPathSegment = idx_segment + 1;
-        res.nextValidPoint = idx_point + 1;
+  if (isGridMapInitialized_) {
+    // TODO check issue with updates of map?
+    // TODO how to handle case where all points are invalid?
+    bool lastStateInvalid = false;
+    res.valid = true;
+    res.nextValidPathSegment = 0;
+    res.nextValidPoint = 0;
+    for (int idx_segment = 0; idx_segment < req.path.segment.size(); idx_segment++) {
+      for (int idx_point = 0; idx_point < req.path.segment[idx_segment].points.size(); idx_point++) {
+        if (req.path.segment[idx_segment].points[idx_point].orientation.w == 0) {
+          ROS_ERROR("Invalid quaternion passed to check path server.");
+        }
+        SE2state state;
+        state = convert(req.path.segment[idx_segment].points[idx_point]);
+        // Check if there is an invalid state and set safe path flag to false
+        if (!isStateValid(state)) {
+          res.valid = false;
+          lastStateInvalid = true;
+        }
+        // If safe path flag is set to false, check if there comes another safe state afterwards
+        // TODO: Can happen multiple times with multiple obstacles on the path, how to handle that?
+        if (lastStateInvalid && isStateValid(state)) {
+          res.nextValidPathSegment = idx_segment;
+          res.nextValidPoint = idx_point;
+          lastStateInvalid = false;
+        }
       }
     }
+    // Check if last state was invalid and then set values such that no valid path exists
+    // Leads to same result if only last state is not valid!
+    if (lastStateInvalid) {
+      res.nextValidPathSegment = req.path.segment.size() + 1;
+      res.nextValidPoint = req.path.segment.end()->points.size() + 1;
+    }
+    return true;
+  } else {
+    ROS_WARN("Grid map has not been initialized yet. checkPathServer can not check trajectory.");
+    return true;
   }
-  return true;
 }
 
 void GridMapLazyStateValidatorRos::initRos() {
