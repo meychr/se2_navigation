@@ -152,7 +152,7 @@ void OmplReedsSheppPlannerRos::publishStartGoalMsgs(const ReedsSheppState& start
 
 void OmplReedsSheppPlannerRos::initializeStateSpaceMarker() {
   // TODO expose as params?
-  double lineWidth_ = 0.1;
+  double lineWidth_ = 0.01;
   std_msgs::ColorRGBA color_;
   // No transparency
   color_.a = 1;
