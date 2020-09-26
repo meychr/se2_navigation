@@ -9,6 +9,8 @@
 
 #include <ros/ros.h>
 
+#include <geometry_msgs/Point32.h>
+#include <geometry_msgs/Polygon.h>
 #include <se2_navigation_msgs/CheckPathSrv.h>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
@@ -70,6 +72,8 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
   ros::ServiceServer checkPathServer_;
   boost::shared_mutex gridMapMutex_;
 };
+
+geometry_msgs::Polygon convert(const RobotFootprint& footprint);
 
 std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(
     const ros::NodeHandlePtr nh, const GridMapLazyStateValidatorRosParameters& params, const grid_map::GridMap& gridMap,

@@ -49,9 +49,11 @@ void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {
 
 bool GridMapLazyStateValidatorRos::checkPathServer(se2_navigation_msgs::CheckPathSrv::Request& req,
                                                    se2_navigation_msgs::CheckPathSrv::Response& res) {
+  // Expects path to be already interpolated, just uses provided states to check validity
   if (isGridMapInitialized_) {
     ReadLock readLock(gridMapMutex_);
     bool lastStateInvalid = false;
+    res.footprint = convert(nominalFootprint_);
     res.valid = true;
     res.nextValidPathSegment = 0;
     res.nextValidPoint = 0;
@@ -63,13 +65,17 @@ bool GridMapLazyStateValidatorRos::checkPathServer(se2_navigation_msgs::CheckPat
         SE2state state;
         state = convert(req.path.segment[idx_segment].points[idx_point]);
         // Check if there is an invalid state and set safe path flag to false
-        if (!isStateValid(state)) {
+        bool isCurrentStateValid = isStateValid(state);
+        if (!isCurrentStateValid) {
           res.valid = false;
+          res.stateValidity.push_back(false);
           lastStateInvalid = true;
+        } else {
+          res.stateValidity.push_back(true);
         }
         // If safe path flag is set to false, check if there comes another safe state afterwards
         // TODO: Can happen multiple times with multiple obstacles on the path, how to handle that?
-        if (lastStateInvalid && isStateValid(state)) {
+        if (lastStateInvalid && isCurrentStateValid) {
           res.nextValidPathSegment = idx_segment;
           res.nextValidPoint = idx_point;
           lastStateInvalid = false;
@@ -103,6 +109,18 @@ void GridMapLazyStateValidatorRos::publishMap(const grid_map::GridMap& map) cons
   grid_map_msgs::GridMap msg;
   grid_map::GridMapRosConverter::toMessage(map, msg);
   mapPublisher_.publish(msg);
+}
+
+geometry_msgs::Polygon convert(const RobotFootprint& footprint) {
+  geometry_msgs::Polygon polygon;
+  for (const auto& vertex : footprint.vertex_) {
+    geometry_msgs::Point32 point;
+    point.x = vertex.x_;
+    point.y = vertex.y_;
+    point.z = 0.0;
+    polygon.points.push_back(point);
+  }
+  return polygon;
 }
 
 std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(

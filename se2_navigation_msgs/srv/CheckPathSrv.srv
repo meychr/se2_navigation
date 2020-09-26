@@ -1,7 +1,9 @@
 # Request
-PathMsg 		path
+PathMsg 		        path
 ---
 # Response
-bool            valid
-int64           nextValidPathSegment
-int64           nextValidPoint
+bool                    valid
+int64                   nextValidPathSegment
+int64                   nextValidPoint
+bool[]                  stateValidity
+geometry_msgs/Polygon   footprint

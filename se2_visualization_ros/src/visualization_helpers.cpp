@@ -122,6 +122,27 @@ void drawSphereList(const std::vector<geometry_msgs::Point>& points, const Color
   marker->points = points;
 }
 
+void drawFootprint(const Eigen::Vector3d& center, const geometry_msgs::Polygon& footprint, const Color& color, const double& scale,
+                   visualization_msgs::Marker* marker) {
+  marker->color = color;
+  marker->scale.x = scale;
+  marker->action = visualization_msgs::Marker::ADD;
+  marker->type = visualization_msgs::Marker::LINE_STRIP;
+  marker->pose.position = createPoint(center.x(), center.y(), center.z());
+
+  // set a unit quaternion such that rviz doesn't complain
+  marker->pose.orientation.x = 0.0;
+  marker->pose.orientation.y = 0.0;
+  marker->pose.orientation.z = 0.0;
+  marker->pose.orientation.w = 1.0;
+
+  // Need five points for a rectangle to result in four lines
+  for (const auto& vertex : footprint.points) {
+    marker->points.push_back(createPoint(vertex.x, vertex.y, vertex.z));
+  }
+  marker->points.push_back(createPoint(footprint.points[0].x, footprint.points[0].y, footprint.points[0].z));
+}
+
 void drawAxes(const Eigen::Vector3d& p, const Eigen::Quaterniond& q, double scale, double line_width, visualization_msgs::Marker* marker) {
   marker->colors.resize(6);
   marker->points.resize(6);
