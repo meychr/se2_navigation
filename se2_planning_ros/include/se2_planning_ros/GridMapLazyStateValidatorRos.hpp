@@ -48,7 +48,7 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
 
   void initialize() override;
   void setParameters(const GridMapLazyStateValidatorRosParameters& parameters);
-  void publishMap() const;
+  void publishMap(const grid_map::GridMap& map) const;
 
  private:
   void initRos();
@@ -59,7 +59,6 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
   GridMapLazyStateValidatorRosParameters parameters_;
 
   //! Grid map data.
-  grid_map::GridMap map_;
   ros::Subscriber mapSubscriber_;
   ros::Publisher mapPublisher_;
   bool newMapAvailable_ = false;

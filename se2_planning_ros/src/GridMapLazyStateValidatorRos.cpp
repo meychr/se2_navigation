@@ -33,18 +33,9 @@ void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {
     isGridMapInitialized_ = false;
 
     if (newMap.exists(obstacleLayerName_)) {
-      // Convert resolution
-      map_.setFrameId(newMap.getFrameId());
-      map_.setTimestamp(newMap.getTimestamp());
-      map_.setGeometry(newMap.getLength(), parameters_.gridMapResolution_, newMap.getPosition());
-      if (!map_.addDataFrom(newMap, true, true, true)) {
-        ROS_ERROR("GlobalMap: Update of map failed.");
-      }
-      setGridMap(map_);
-      publishMap();
+      setGridMap(newMap);
+      publishMap(getGridMap());
       newMapAvailable_ = true;
-      ROS_DEBUG_STREAM("GlobalMap: Convert initial map resolution from " << newMap.getResolution() << " to "
-                                                                         << parameters_.gridMapResolution_ << ".");
     } else {
       ROS_ERROR("GlobalMap: No traversability layer found to load!");
     }
@@ -105,9 +96,9 @@ void GridMapLazyStateValidatorRos::initRos() {
   checkPathServer_ = nh_->advertiseService(parameters_.checkPathServiceName_, &GridMapLazyStateValidatorRos::checkPathServer, this);
 }
 
-void GridMapLazyStateValidatorRos::publishMap() const {
+void GridMapLazyStateValidatorRos::publishMap(const grid_map::GridMap& map) const {
   grid_map_msgs::GridMap msg;
-  grid_map::GridMapRosConverter::toMessage(map_, msg);
+  grid_map::GridMapRosConverter::toMessage(map, msg);
   mapPublisher_.publish(msg);
 }
 
