@@ -23,6 +23,8 @@ void GridMapLazyStateValidatorRos::initialize() {
 }
 
 void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {
+  // TODO Also replace using the same gridMapMutex_? Issue that we require to set it in OMPLReedsSheppPlanner which only
+  //  has access to StateValidator class => add general state validator mutex?
   if (isLocked()) {
     ROS_INFO_STREAM("Planner is running, grid map for state validator can not be updated!");
     return;
@@ -30,25 +32,25 @@ void GridMapLazyStateValidatorRos::mapCb(const grid_map_msgs::GridMap& msg) {
     grid_map::GridMap newMap;
     grid_map::GridMapRosConverter::fromMessage(msg, newMap);
 
-    isGridMapInitialized_ = false;
-
     if (newMap.exists(obstacleLayerName_)) {
+      WriteLock writeLock(gridMapMutex_);
       setGridMap(newMap);
-      publishMap(getGridMap());
       newMapAvailable_ = true;
+      if (!isGridMapInitialized_) {
+        isGridMapInitialized_ = true;
+      }
+      writeLock.unlock();
+      publishMap(getGridMap());
     } else {
       ROS_ERROR("GlobalMap: No traversability layer found to load!");
     }
-
-    isGridMapInitialized_ = true;
   }
 }
 
 bool GridMapLazyStateValidatorRos::checkPathServer(se2_navigation_msgs::CheckPathSrv::Request& req,
                                                    se2_navigation_msgs::CheckPathSrv::Response& res) {
   if (isGridMapInitialized_) {
-    // TODO check issue with updates of map?
-    // TODO how to handle case where all points are invalid?
+    ReadLock readLock(gridMapMutex_);
     bool lastStateInvalid = false;
     res.valid = true;
     res.nextValidPathSegment = 0;
@@ -74,6 +76,7 @@ bool GridMapLazyStateValidatorRos::checkPathServer(se2_navigation_msgs::CheckPat
         }
       }
     }
+    readLock.unlock();
     // Check if last state was invalid and then set values such that no valid path exists
     // Leads to same result if only last state is not valid!
     if (lastStateInvalid) {

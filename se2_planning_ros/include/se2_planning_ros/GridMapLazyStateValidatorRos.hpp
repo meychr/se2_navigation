@@ -10,6 +10,8 @@
 #include <ros/ros.h>
 
 #include <se2_navigation_msgs/CheckPathSrv.h>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 #include <grid_map_ros/grid_map_ros.hpp>
 #include "se2_planning/GridMapLazyStateValidator.hpp"
 #include "se2_planning_ros/OmplReedsSheppPlannerRos.hpp"
@@ -17,6 +19,9 @@
 #include <string>
 
 namespace se2_planning {
+
+typedef boost::unique_lock<boost::shared_mutex> WriteLock;
+typedef boost::shared_lock<boost::shared_mutex> ReadLock;
 
 struct GridMapLazyStateValidatorRosParameters {
   std::string gridMapFrame_ = "map";
@@ -63,6 +68,7 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
   ros::Publisher mapPublisher_;
   bool newMapAvailable_ = false;
   ros::ServiceServer checkPathServer_;
+  boost::shared_mutex gridMapMutex_;
 };
 
 std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(
