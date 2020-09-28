@@ -66,6 +66,8 @@ void GridMapTest::publishMap() {
 void GridMapTest::obstacleCb(geometry_msgs::Point position) {
   double x = position.x;
   double y = position.y;
+  double obstacleElevation = std::min(1.0, std::max(position.z, 0.0)); // limit to range 0 to 1
+  double obstacleTraversability = 1.0 - obstacleElevation; // limited to range 0 to 1
 
   // Reset elevation layer
   map_[elevationLayerName_].setConstant(0.0);
@@ -76,7 +78,7 @@ void GridMapTest::obstacleCb(geometry_msgs::Point position) {
     map_.getPosition(*iterator, position);
     if (position.x() < (x + obstacleLength_ / 2.0) && position.x() > (x - obstacleLength_ / 2.0)
         && position.y() < (y + obstacleWidth_ / 2.0) && position.y() > (y - obstacleWidth_ / 2.0)) {
-      map_.at(elevationLayerName_, *iterator) = 1.0;  // obstacles of height 1.0 m
+      map_.at(elevationLayerName_, *iterator) = obstacleElevation;  // height of obstacle
     }
   }
 
@@ -89,7 +91,7 @@ void GridMapTest::obstacleCb(geometry_msgs::Point position) {
     map_.getPosition(*iterator, position);
     if (position.x() < (x + obstacleLength_ / 2.0) && position.x() > (x - obstacleLength_ / 2.0)
         && position.y() < (y + obstacleWidth_ / 2.0) && position.y() > (y - obstacleWidth_ / 2.0)) {
-      map_.at(traversabilityLayerName_, *iterator) = 0.0;  // obstacles, not traversable
+      map_.at(traversabilityLayerName_, *iterator) = obstacleTraversability;  // obstacles traversability value
     }
   }
 
