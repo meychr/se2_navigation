@@ -22,8 +22,8 @@
 
 namespace se2_planning {
 
-typedef boost::unique_lock<boost::shared_mutex> WriteLock;
-typedef boost::shared_lock<boost::shared_mutex> ReadLock;
+using WriteLock = boost::unique_lock<boost::shared_mutex>;
+using ReadLock = boost::shared_lock<boost::shared_mutex>;
 
 struct GridMapLazyStateValidatorRosParameters {
   std::string gridMapFrame_ = "map";
