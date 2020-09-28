@@ -88,10 +88,16 @@ GridMapLazyStateValidatorRosParameters loadGridMapLazyStateValidatorRosParameter
     parameters.gridMapStateValidityCheckingMethod_ = StateValidityCheckingMethod::COLLISION;
   } else if (stateValidityCheckingMethodName == "traversability") {
     parameters.gridMapStateValidityCheckingMethod_ = StateValidityCheckingMethod::TRAVERSABILITY;
+  } else if (stateValidityCheckingMethodName == "robust_traversability") {
+    parameters.gridMapStateValidityCheckingMethod_ = StateValidityCheckingMethod::ROBUST_TRAVERSABILITY;
   } else {
-    throw std::runtime_error("Invalid value for StateValidityCheckingMethod. Valid values are 'collision' or 'traversability'");
+    throw std::runtime_error(
+        "Invalid value for StateValidityCheckingMethod. Valid values are 'collision', 'traversability'"
+        "or 'robust_traversability'");
   }
   parameters.gridMapStateValidityThreshold_ = node["grid_map_state_validity_threshold"].as<double>();
+  parameters.gridMapUnsafeStateValidityThreshold_ = node["grid_map_unsafe_state_validity_threshold"].as<double>();
+  parameters.gridMapMaxNumberOfUnsafeCells_ = node["grid_map_max_number_of_unsafe_cells"].as<int>();
   parameters.gridMapMsgSubTopic_ = node["grid_map_msg_sub_topic"].as<std::string>();
   parameters.gridMapMsgPubTopic_ = node["grid_map_msg_pub_topic"].as<std::string>();
   parameters.gridMapResolution_ = node["grid_map_resolution"].as<double>();

@@ -44,10 +44,24 @@ StateValidityCheckingMethod GridMapLazyStateValidator::getStateValidityCheckingM
 }
 
 void GridMapLazyStateValidator::setStateValidityThreshold(double value) {
-  stateValidityThreshold_ = value;
+  minStateValidityThreshold_ = value;
 }
 double GridMapLazyStateValidator::getStateValidityThreshold() const {
-  return stateValidityThreshold_;
+  return minStateValidityThreshold_;
+}
+
+void GridMapLazyStateValidator::setUnsafeStateValidityThreshold(double value) {
+  unsafeStateValidityThreshold_ = value;
+}
+double GridMapLazyStateValidator::getUnsafeStateValidityThreshold() const {
+  return unsafeStateValidityThreshold_;
+}
+
+void GridMapLazyStateValidator::setMaxNumberOfUnsafeCells(int value) {
+  maxNumberOfUnsafeCells_ = value;
+}
+int GridMapLazyStateValidator::getMaxNumberOfUnsafeCells() const {
+  return maxNumberOfUnsafeCells_;
 }
 
 void GridMapLazyStateValidator::initialize() {
@@ -79,9 +93,12 @@ bool GridMapLazyStateValidator::isStateValid(const State& state) const {
   const auto se2state = *(state.as<SE2state>());
   switch (stateValidityCheckingMethod_) {
     case StateValidityCheckingMethod::COLLISION:
-      return !isInCollision(se2state, nominalFootprintPoints_, gridMap_, obstacleLayerName_, stateValidityThreshold_);
+      return !isInCollision(se2state, nominalFootprintPoints_, gridMap_, obstacleLayerName_, minStateValidityThreshold_);
     case StateValidityCheckingMethod::TRAVERSABILITY:
-      return isTraversableIterator(se2state, nominalFootprint_, gridMap_, obstacleLayerName_, stateValidityThreshold_);
+      return isTraversableIterator(se2state, nominalFootprint_, gridMap_, obstacleLayerName_, minStateValidityThreshold_);
+    case StateValidityCheckingMethod::ROBUST_TRAVERSABILITY:
+      return isTraversableRobustIterator(se2state, nominalFootprint_, gridMap_, obstacleLayerName_, minStateValidityThreshold_,
+                                         unsafeStateValidityThreshold_, maxNumberOfUnsafeCells_);
     default:
       throw std::runtime_error("Invalid StateValidityCheckingMethod set.");
   }
@@ -182,6 +199,7 @@ bool isTraversableIterator(const SE2state& state, const RobotFootprint& footprin
                            const std::string& traversabilityLayer, const double traversabilityThreshold) {
   RobotFootprint currentFootprint;
   currentFootprint = footprint;  // assign memory/size, otherwise segfault
+  // Translate and rotate to current state
   footprintAtPose(footprint, state, &currentFootprint);
   grid_map::Polygon footprintPolygon;
   footprintPolygon = toPolygon(currentFootprint);
@@ -192,7 +210,6 @@ bool isTraversableIterator(const SE2state& state, const RobotFootprint& footprin
   for (grid_map::PolygonIterator iterator(gridMap, footprintPolygon); !iterator.isPastEnd(); ++iterator) {
     double traversability = 1.0;
     try {
-      // Translate and rotate to current state
       const grid_map::Index idx(*iterator);
       traversability = data(idx.x(), idx.y());
     } catch (const std::out_of_range& e) {
@@ -207,6 +224,49 @@ bool isTraversableIterator(const SE2state& state, const RobotFootprint& footprin
 
     if (traversability < traversabilityThreshold) {
       return false;
+    }
+  }
+
+  return true;
+}
+
+bool isTraversableRobustIterator(const SE2state& state, const RobotFootprint& footprint, const grid_map::GridMap& gridMap,
+                                 const std::string& traversabilityLayer, const double minTraversabilityThreshold,
+                                 const double unsafeTraversabilityThreshold, const int maxNumberOfUnsafeCells) {
+  RobotFootprint currentFootprint;
+  currentFootprint = footprint;  // assign memory/size, otherwise segfault
+  // Translate and rotate to current state
+  footprintAtPose(footprint, state, &currentFootprint);
+  grid_map::Polygon footprintPolygon;
+  footprintPolygon = toPolygon(currentFootprint);
+  footprintPolygon.setFrameId(gridMap.getFrameId());
+  footprintPolygon.setTimestamp(gridMap.getTimestamp());
+
+  int numberOfUnsafeCells = 0;
+
+  const auto& data = gridMap.get(traversabilityLayer);
+  for (grid_map::PolygonIterator iterator(gridMap, footprintPolygon); !iterator.isPastEnd(); ++iterator) {
+    double traversability = 1.0;
+    try {
+      const grid_map::Index idx(*iterator);
+      traversability = data(idx.x(), idx.y());
+    } catch (const std::out_of_range& e) {
+      continue;  // TODO at the moment return traversable for out of bounds case
+    }
+
+    // ignore nans since they might come from faulty
+    // perception pipeline
+    if (std::isnan(traversability)) {
+      continue;
+    }
+
+    if (traversability < minTraversabilityThreshold) {
+      return false;
+    } else if (traversability < unsafeTraversabilityThreshold) {
+      numberOfUnsafeCells++;
+      if (numberOfUnsafeCells > maxNumberOfUnsafeCells) {
+        return false;
+      }
     }
   }
 
@@ -253,16 +313,17 @@ void addExtraPointsForEarlyStopping(const RobotFootprint& footprint, std::vector
   points->insert(points->begin(), extraPoints.begin(), extraPoints.end());
 }
 
-std::unique_ptr<GridMapLazyStateValidator> createGridMapLazyStateValidator(const grid_map::GridMap& gridMap,
-                                                                           const RobotFootprint& footprint,
-                                                                           const std::string& obstacleLayer,
-                                                                           const StateValidityCheckingMethod& stateValidityCheckingMethod,
-                                                                           const double stateValidityThreshold) {
+std::unique_ptr<GridMapLazyStateValidator> createGridMapLazyStateValidator(
+    const grid_map::GridMap& gridMap, const RobotFootprint& footprint, const std::string& obstacleLayer,
+    const StateValidityCheckingMethod& stateValidityCheckingMethod, const double stateValidityThreshold,
+    const double unsafeStateValidityThreshold, const int maxNumberOfUnsafeCells) {
   std::unique_ptr<GridMapLazyStateValidator> validator = std::make_unique<GridMapLazyStateValidator>();
   validator->setGridMap(gridMap);
   validator->setObstacleLayerName(obstacleLayer);
   validator->setStateValidityCheckingMethod(stateValidityCheckingMethod);
   validator->setStateValidityThreshold(stateValidityThreshold);
+  validator->setUnsafeStateValidityThreshold(unsafeStateValidityThreshold);
+  validator->setMaxNumberOfUnsafeCells(maxNumberOfUnsafeCells);
   validator->setFootprint(footprint);
   validator->initialize();
   return std::move(validator);

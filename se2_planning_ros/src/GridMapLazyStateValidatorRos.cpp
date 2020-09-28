@@ -123,15 +123,17 @@ geometry_msgs::Polygon convert(const RobotFootprint& footprint) {
   return polygon;
 }
 
-std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(
-    const ros::NodeHandlePtr nh, const GridMapLazyStateValidatorRosParameters& params, const grid_map::GridMap& gridMap,
-    const RobotFootprint& footprint, const std::string& obstacleLayer, const StateValidityCheckingMethod stateValidityCheckingMethod,
-    const double stateValidityCheckingThreshold) {
+std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(const ros::NodeHandlePtr nh,
+                                                                                 const GridMapLazyStateValidatorRosParameters& params,
+                                                                                 const grid_map::GridMap& gridMap,
+                                                                                 const RobotFootprint& footprint) {
   std::unique_ptr<GridMapLazyStateValidatorRos> validator = std::make_unique<GridMapLazyStateValidatorRos>(nh);
   validator->setGridMap(gridMap);
-  validator->setObstacleLayerName(obstacleLayer);
-  validator->setStateValidityCheckingMethod(stateValidityCheckingMethod);
-  validator->setStateValidityThreshold(stateValidityCheckingThreshold);
+  validator->setObstacleLayerName(params.gridMapObstacleLayerName_);
+  validator->setStateValidityCheckingMethod(params.gridMapStateValidityCheckingMethod_);
+  validator->setStateValidityThreshold(params.gridMapStateValidityThreshold_);
+  validator->setUnsafeStateValidityThreshold(params.gridMapUnsafeStateValidityThreshold_);
+  validator->setMaxNumberOfUnsafeCells(params.gridMapMaxNumberOfUnsafeCells_);
   validator->setFootprint(footprint);
   validator->setParameters(params);
   validator->initialize();

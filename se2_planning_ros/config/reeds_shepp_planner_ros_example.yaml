@@ -13,6 +13,8 @@ state_validator_ros:
   grid_map_obstacle_layer_name:     obstacle
   grid_map_state_validity_checking_method: collision
   grid_map_state_validity_threshold: 0.1
+  grid_map_unsafe_state_validity_threshold: 0.1
+  grid_map_max_number_of_unsafe_cells: 0
   # grid map dimensions/geometry
   grid_map_resolution:              0.1
   grid_map_length:                  20.0

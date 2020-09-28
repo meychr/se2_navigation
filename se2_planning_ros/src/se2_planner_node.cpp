@@ -62,13 +62,12 @@ int main(int argc, char** argv) {
   gridMap.add(stateValidatorRosParameters.gridMapObstacleLayerName_, stateValidatorRosParameters.gridMapDefaultValue_);
 
   // Set grid map state validator
-  planner->setStateValidator(se2_planning::createGridMapLazyStateValidatorRos(
+  auto validator = se2_planning::createGridMapLazyStateValidatorRos(
       nh, stateValidatorRosParameters, gridMap,
       se2_planning::computeFootprint(
           stateValidatorRosParameters.robotFootPrintLengthForward_, stateValidatorRosParameters.robotFootPrintLengthBackward_,
-          stateValidatorRosParameters.robotFootPrintWidthLeft_, stateValidatorRosParameters.robotFootPrintWidthRight_),
-      stateValidatorRosParameters.gridMapObstacleLayerName_, stateValidatorRosParameters.gridMapStateValidityCheckingMethod_,
-      stateValidatorRosParameters.gridMapStateValidityThreshold_));
+          stateValidatorRosParameters.robotFootPrintWidthLeft_, stateValidatorRosParameters.robotFootPrintWidthRight_));
+  planner->setStateValidator(std::move(validator));
 
   // Setup ROS interface and start node
   se2_planning::OmplReedsSheppPlannerRos plannerRos(nh);

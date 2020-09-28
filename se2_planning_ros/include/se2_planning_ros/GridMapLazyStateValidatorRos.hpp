@@ -33,6 +33,8 @@ struct GridMapLazyStateValidatorRosParameters {
   StateValidityCheckingMethod gridMapStateValidityCheckingMethod_ =
       StateValidityCheckingMethod::TRAVERSABILITY;  // redundant, already defined by GridMapStateValidator
   double gridMapStateValidityThreshold_ = 0.5;
+  double gridMapUnsafeStateValidityThreshold_ = 0.5;
+  int gridMapMaxNumberOfUnsafeCells_ = 0;
   double gridMapResolution_ = 0.2;
   double gridMapLength_ = 20.0;
   double gridMapWidth_ = 20.0;
@@ -75,9 +77,9 @@ class GridMapLazyStateValidatorRos : public GridMapLazyStateValidator {
 
 geometry_msgs::Polygon convert(const RobotFootprint& footprint);
 
-std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(
-    const ros::NodeHandlePtr nh, const GridMapLazyStateValidatorRosParameters& params, const grid_map::GridMap& gridMap,
-    const RobotFootprint& footprint, const std::string& obstacleLayer, const StateValidityCheckingMethod stateValidityCheckingMethod,
-    const double stateValidityCheckingThreshold);
+std::unique_ptr<GridMapLazyStateValidatorRos> createGridMapLazyStateValidatorRos(const ros::NodeHandlePtr nh,
+                                                                                 const GridMapLazyStateValidatorRosParameters& params,
+                                                                                 const grid_map::GridMap& gridMap,
+                                                                                 const RobotFootprint& footprint);
 
 } /* namespace se2_planning */
