@@ -116,6 +116,10 @@ void PlanningPanel::onInitialize()
     "/controller_state_command", 1);
   spacebokControlCommandPublisher_ = nh_.advertise<spacebok_msgs::SpacebokHighlevelCommands>(
     "/highlevel_commands", 1);
+  spacebokPathManagerInfoSubscriber_ = nh_.subscribe("/spacebok_path_manager/info",
+                                                     1,
+                                                     &PlanningPanel::pathManagerInfoCallback,
+                                                     this);
 }
 
 void PlanningPanel::createLayout()
@@ -181,6 +185,9 @@ void PlanningPanel::createLayout()
   service_global_path_layout->setContentsMargins(0, 0, 0, 0);
   globalNavigationGroupBox->setLayout(service_global_path_layout);
 
+  //
+  global_path_manager_info_list_ = new QListWidget();
+
   // Planner services and publications.
   QGroupBox *localNavigationGroupBox = new QGroupBox(tr("Local Navigation"));
   QHBoxLayout* service_layout = new QHBoxLayout;
@@ -234,6 +241,7 @@ void PlanningPanel::createLayout()
   layout->addWidget(formGroupBox);
   layout->addLayout(start_goal_layout);
   layout->addWidget(globalNavigationGroupBox);
+  layout->addWidget(global_path_manager_info_list_);
   layout->addWidget(localNavigationGroupBox);
   layout->addWidget(spacebokGroupBox);
   layout->addWidget(orientationEstimationGroupBox);
@@ -489,6 +497,23 @@ interactive_markers_.setPose(pose);
 }
 
 interactive_markers_.updateMarkerPose(id, pose);
+}
+
+void PlanningPanel::pathManagerInfoCallback(const std_msgs::String& msg) {
+  clearListWidget();
+  addListWidgetItem(msg.data, "green");
+}
+
+void PlanningPanel::addListWidgetItem(std::string text, std::string color) {
+  QListWidgetItem *item = new QListWidgetItem(QString::fromStdString(text));
+  item->setBackgroundColor(QString::fromStdString(color));
+  global_path_manager_info_list_->addItem(item);
+
+}
+
+void PlanningPanel::clearListWidget() {
+  global_path_manager_info_list_->clear();
+
 }
 
 void PlanningPanel::callGlobalPlanningService()
