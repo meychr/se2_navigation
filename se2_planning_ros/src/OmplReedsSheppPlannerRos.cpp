@@ -46,6 +46,8 @@ bool OmplReedsSheppPlannerRos::planningService(PlanningService::Request& req, Pl
     return true;
   }
 
+  planTimeStamp_ = req.pathRequest.header.stamp;
+
   const auto start = se2_planning::convert(req.pathRequest.startingPose);
   const auto goal = se2_planning::convert(req.pathRequest.goalPose);
   setStartingState(start);
@@ -124,7 +126,7 @@ void OmplReedsSheppPlannerRos::publishPathNavMsgs() const {
   planner_->as<OmplPlanner>()->getInterpolatedPath(&rsPath, parameters_.pathNavMsgResolution_);
   nav_msgs::Path msg = se2_planning::copyAllPoints(rsPath);
   msg.header.frame_id = parameters_.pathFrame_;
-  msg.header.stamp = ros::Time::now();
+  msg.header.stamp = planTimeStamp_;
   msg.header.seq = planSeqNumber_;
   pathNavMsgsPublisher_.publish(msg);
   ROS_INFO_STREAM("Publishing ReedsShepp path nav msg, num states: " << msg.poses.size());
@@ -135,7 +137,7 @@ void OmplReedsSheppPlannerRos::publishPath() const {
   planner_->getPath(&rsPath);
   se2_navigation_msgs::Path msg = se2_planning::convert(rsPath);
   msg.header_.frame_id = parameters_.pathFrame_;
-  msg.header_.stamp = ros::Time::now();
+  msg.header_.stamp = planTimeStamp_;
   msg.header_.seq = planSeqNumber_;
   pathPublisher_.publish(se2_navigation_msgs::convert(msg));
   ROS_INFO_STREAM("Publishing ReedsShepp path, num states: " << rsPath.numPoints());
@@ -144,12 +146,12 @@ void OmplReedsSheppPlannerRos::publishPath() const {
 void OmplReedsSheppPlannerRos::publishStartGoalMsgs(const ReedsSheppState& start, const ReedsSheppState& goal) const {
   geometry_msgs::PoseStamped startPose;
   startPose.header.frame_id = parameters_.pathFrame_;
-  startPose.header.stamp = ros::Time::now();
+  startPose.header.stamp = planTimeStamp_;
   startPose.pose = se2_planning::convert(start);
   startPublisher_.publish(startPose);
   geometry_msgs::PoseStamped goalPose;
   goalPose.header.frame_id = parameters_.pathFrame_;
-  goalPose.header.stamp = ros::Time::now();
+  goalPose.header.stamp = planTimeStamp_;
   goalPose.pose = se2_planning::convert(goal);
   goalPublisher_.publish(goalPose);
 }
@@ -178,7 +180,7 @@ void OmplReedsSheppPlannerRos::initializeStateSpaceMarker() {
 void OmplReedsSheppPlannerRos::publishStateSpaceMarker() {
   // Set marker info.
   stateSpaceMarker_.header.frame_id = parameters_.pathFrame_;
-  stateSpaceMarker_.header.stamp = ros::Time::now();
+  stateSpaceMarker_.header.stamp = planTimeStamp_;
 
   // Set positions of markers.
   const auto bounds = planner_->as<OmplReedsSheppPlanner>()->getStateSpaceBoundaries();

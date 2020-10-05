@@ -56,6 +56,7 @@ class OmplReedsSheppPlannerRos : public PlannerRos {
   OmplReedsSheppPlannerRosParameters parameters_;
   ros::ServiceServer planningService_;
   int planSeqNumber_ = -1;
+  ros::Time planTimeStamp_;
   const int reedsSheppStateSpaceDim_ = 2;
 };
 
