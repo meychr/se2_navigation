@@ -39,10 +39,11 @@ bool OmplReedsSheppPlannerRos::plan() {
 }
 
 bool OmplReedsSheppPlannerRos::planningService(PlanningService::Request& req, PlanningService::Response& res) {
-  // TODO Grid map in state validator is currently initialized default values, this check is therefore useless
+  // TODO Grid map in state validator is currently initialized to some default values, this check is therefore useless
   if (!planner_->as<OmplReedsSheppPlanner>()->getStateValidator().isInitialized()) {
     ROS_WARN_STREAM("State validator has not been initialized yet. Abort planning.");
-    return false;
+    res.status = false;
+    return true;
   }
 
   const auto start = se2_planning::convert(req.pathRequest.startingPose);
@@ -93,9 +94,10 @@ bool OmplReedsSheppPlannerRos::planningService(PlanningService::Request& req, Pl
                                        << ") not valid. Start planning anyway.");
   }
   if (!planner_->as<OmplReedsSheppPlanner>()->getStateValidator().isStateValid(goal)) {
-    ROS_WARN_STREAM("Goal state (x: " << goal.x_ << ", y: " << goal.y_ << ", yaw: " << goal.yaw_ << ") not valid. Abort planning.");
-    planner_->as<OmplReedsSheppPlanner>()->unlockStateValidator();
-    return false;
+    ROS_WARN_STREAM("Goal state (x: " << goal.x_ << ", y: " << goal.y_ << ", yaw: " << goal.yaw_ << ") not valid. Start planning anyway.");
+    //    ROS_WARN_STREAM("Goal state (x: " << goal.x_ << ", y: " << goal.y_ << ", yaw: " << goal.yaw_ << ") not valid. Abort planning.");
+    //    planner_->as<OmplReedsSheppPlanner>()->unlockStateValidator();
+    //    return false;
   }
 
   bool result = plan();
@@ -103,6 +105,8 @@ bool OmplReedsSheppPlannerRos::planningService(PlanningService::Request& req, Pl
 
   res.status = result;
 
+  // Always return true for function, if something fails, set res.status = false, otherwise service call fails with
+  // error that service not callable
   return true;
 }
 
