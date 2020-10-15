@@ -57,6 +57,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "spacebok_msgs/SpacebokHighlevelState.h"
 #include "spacebok_msgs/SpacebokHighlevelCommands.h"
 #include "spacebok_global_planner/GetGlobalPath.h"
+#include "ros/package.h"  // used to find spacebok_global_planner
 #include "std_srvs/Trigger.h"
 #include "std_srvs/Empty.h"
 #include "std_msgs/String.h"
@@ -198,6 +199,7 @@ class PlanningPanel : public rviz::Panel {
 
   // Other state:
   std::string currently_editing_;
+  std::string spacebok_global_planner_package_config_path_;
 
   geometry_msgs::Pose lastPose_;
 

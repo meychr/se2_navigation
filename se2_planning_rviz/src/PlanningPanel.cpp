@@ -120,6 +120,10 @@ void PlanningPanel::onInitialize()
                                                      1,
                                                      &PlanningPanel::pathManagerInfoCallback,
                                                      this);
+  spacebok_global_planner_package_config_path_ = ros::package::getPath("spacebok_global_planner") + "/" + "config";
+  if (spacebok_global_planner_package_config_path_.empty()) {
+    throw std::runtime_error("spacebok_global_planner pkg not found by ros::package::getPath().");
+  }
 }
 
 void PlanningPanel::createLayout()
@@ -523,7 +527,7 @@ void PlanningPanel::callGlobalPlanningService()
 
     std::string service_name = loadGlobalPathServiceName_.toStdString();
     spacebok_global_planner::GetGlobalPath::Request req;
-    req.filePath = globalPathFileName_.toStdString();
+    req.filePath = spacebok_global_planner_package_config_path_ + "/" + globalPathFileName_.toStdString();
     spacebok_global_planner::GetGlobalPath::Response res;
 
     callService(req,res,service_name);
