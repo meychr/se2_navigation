@@ -20,7 +20,7 @@
 	</node>
 
 	<!-- Helper node to generate test maps -->
-	<include file="$(find se2_grid_map_test)/launch/se2_grid_map_test.launch"/>
+<!--	<include file="$(find se2_grid_map_test)/launch/se2_grid_map_test.launch"/>-->
 
 	<!-- RViz -->
 	<node name="rviz" pkg="rviz" type="rviz"
