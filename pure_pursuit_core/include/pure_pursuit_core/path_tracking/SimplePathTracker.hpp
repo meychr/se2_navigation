@@ -23,6 +23,7 @@ class SimplePathTracker : public PathTracker {
   ~SimplePathTracker() override = default;
 
   void importCurrentPath(const Path& path) override;
+  void updateCurrentPath(const Path& path) override;
   void stopTracking() override;
   void setParameters(const SimplePathTrackerParameters& parameters);
 
@@ -34,6 +35,7 @@ class SimplePathTracker : public PathTracker {
 
   States currentFSMState_ = States::NoOperation;
   bool isPathReceived_ = false;
+  bool isPathUpdated_ = false;
   Stopwatch stopwatch_;
   SimplePathTrackerParameters parameters_;
 };
